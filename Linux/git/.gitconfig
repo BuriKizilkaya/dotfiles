@@ -5,7 +5,8 @@
 
 [core]
 	editor = code --wait
-	autocrlf = true
+	autocrlf = false
+	eol = lf
 
 [help]
 	autocorrect = 1
