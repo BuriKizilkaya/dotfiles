@@ -1,0 +1,70 @@
+## Functions
+cheat() {
+  curl -s "cheat.sh/$1";
+}
+
+# Open vim in a new kitty tab
+tab_nvim() {
+  kitty @ launch --type tab --cwd $1 --no-response --keep-focus nvim . 2>/dev/null 1>/dev/null &;
+}
+
+# Jump to folder (zoxide) and open nvim.
+# NOTE: nvim plug will set the root folder properly if a .git folder exists
+zv() {
+  z $1 && nvim .;
+}
+
+# Go to repository root folder
+groot() {
+  root="$(git rev-parse --show-toplevel 2>/dev/null)"
+  if [ -n "$root" ]; then
+      cd $root;
+  else
+      echo "Not in a git repository"
+  fi
+}
+
+# Retrieve process real memory
+psrm() {
+  ps -o rss= -p $1 | awk '{ hr=$1/1024; printf "%13.2f Mb\n",hr }' | tr -d ' ';
+}
+
+# Watch process real memory
+psrml() {
+  while true;
+  do
+    psrm $1;
+    sleep 1;
+  done
+}
+
+# Pretty git log
+glogs() {
+  git log --graph --abbrev-commit --decorate --all \
+    --format=format:"%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(dim white) \
+    - %an%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n %C(white)%s%C(reset)"
+}
+
+# Open git remote
+gshow() {
+  git remote -v | grep fetch | awk '{print $2}' | sed 's/git@/https:\/\//' | sed 's/com:/com\//' | sed 's/\.git$//' | head -n1
+}
+
+kitty_title() {
+  kitty @ set-tab-title "$1"
+}
+
+# Print all 256 ANSI colors
+ansi_colors() {
+  python3 -c "print(''.join(f'\u001b[48;5;{s}m{s.rjust(4)}' + ('\n' if not (int(s)+1) % 8 else '') for s in (str(i) for i in range(256))) + '\u001b[0m')"
+}
+
+# Compare two files with code
+compfs() {
+    code --diff $1 $2
+}
+
+# Aliases
+alias isodate='date -u +"%Y-%m-%dT%H:%M:%SZ"'
+alias serv="python3 -m http.server"
+alias pip='noglob pip'
