@@ -20,11 +20,6 @@ warn() {
 }
 
 
-info "### Install packages ###"
-sudo apt update
-sudo apt install -y zsh stow
-
-
 # add zsh as a login shell
 info "### Configure Shell ###"
 command -v zsh | sudo tee -a /etc/shells

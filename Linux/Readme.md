@@ -14,3 +14,7 @@ To install the dotfiles, clone the repository and run the `install.sh target-fol
 - [ ] Add script for installing packages
   - [ ] OH MY POSH
   - [ ] Plugins for ZSH
+
+- [ ] Add Ansible top of everything
+  - [ ] Install packages
+  - [ ] Install dotfiles
