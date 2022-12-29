@@ -1,0 +1,6 @@
+- name: "stow '{{ directory }}'"
+  shell: |
+    stow --verbose=2 --target "/home/{{ ansible_user }}" --dir {{ role_path }}/files/dotfiles/ "{{ directory }}"
+  register: output
+  changed_when: '"LINK" in output.stderr'
+  when: ansible_distribution in ["Debian", "Ubuntu", "Pop!_OS"]

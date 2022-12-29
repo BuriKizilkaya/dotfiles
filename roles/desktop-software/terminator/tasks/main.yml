@@ -1,0 +1,19 @@
+- name: install terminator on linux
+  tags: desktop-software, terminator
+  block:
+    - name: Install Terminator
+      package:
+        name:
+          - terminator
+        state: latest
+
+    - name: Delete Terminator config
+      file:
+        path: /home/{{ ansible_user }}/.config/terminator/config
+        state: absent
+
+    - name: Copy Terminator config
+      copy:
+        src: terminator_config
+        dest: /home/{{ ansible_user }}/.config/terminator/config
+  when: ansible_distribution in ["Debian", "Ubuntu", "Pop!_OS"]

@@ -1,0 +1,29 @@
+- hosts: windows
+  tasks:
+    - name: Test Connection
+      win_ping:
+
+    - name: Ensure Chocolatey is installed
+      win_chocolatey:
+        name: chocolatey
+        state: latest
+        name:
+        - chocolatey
+
+    - name: Install Chocolatey packages
+      win_chocolatey:
+        state: latest
+        name:
+        - vscode
+        - git
+        - googlechrome
+        - 7zip.install
+        - powershell-core
+        - notion
+        - languagetool
+
+    - name: Uninstall packages
+      win_chocolatey:
+        state: absent
+        name:
+        - firefox

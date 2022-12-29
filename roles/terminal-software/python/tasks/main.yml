@@ -1,0 +1,31 @@
+- name: install python in linux
+  block:
+   - name: install python
+     become: true
+     become_user: root
+     package:
+       state: latest
+       name:
+         - python3
+         - python3-pip
+         - python3-venv
+  when: ansible_distribution in ["Debian", "Ubuntu", "Pop!_OS"]
+
+- name: install python in windows
+  block:
+    - name: Install Chocolatey packages
+      win_chocolatey:
+        state: latest
+        name:
+          - python
+          - pip
+  when: ansible_distribution in "Windows"
+
+- name: install python core packages
+  pip:
+    name:
+      - black
+      - pytest
+      - pylint
+      - flake8
+    executable: pip3

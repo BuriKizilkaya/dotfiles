@@ -1,0 +1,27 @@
+- name: install 1password on linux
+  tags: desktop-software, 1password
+  block:
+    - name: install 1password
+      become_user: "root"
+      become: true
+      apt:
+        deb: https://downloads.1password.com/linux/debian/amd64/stable/1password-latest.deb
+
+    - name: copy 1password.desktop to autostart
+      ansible.builtin.copy:
+        src: "1password.desktop"
+        dest: "/home/{{ ansible_user }}/.config/autostart/1password.desktop"
+        follow: true
+  when: ansible_distribution in ["Debian", "Ubuntu", "Pop!_OS"]
+
+
+- name: install 1password on windows
+  tags: desktop-software, 1password
+  block:
+    - name: Install Chocolatey packages
+      win_chocolatey:
+        state: latest
+        name:
+          - 1password
+  when: ansible_distribution in "Windows"
+

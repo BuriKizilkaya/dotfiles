@@ -1,0 +1,28 @@
+- name: install oh-my-posh linux
+  block:
+    - name: install oh-my-posh
+      become: true
+      become_user: root
+      shell: |
+        wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-linux-amd64 -O /usr/local/bin/oh-my-posh
+        chmod +x /usr/local/bin/oh-my-posh
+
+    - name: creae .poshtehmes folder
+      file:
+        path: /home/{{ ansible_user }}/.poshthemes
+        state: directory
+
+    - name: set up oh-my-posh-theme
+      copy:
+        src: ohmyposh_theme.omp.json
+        dest: /home/{{ ansible_user }}/.poshthemes/ohmyposh_theme.omp.json
+  when: ansible_distribution in ["Debian", "Ubuntu", "Pop!_OS"]
+
+- name: install oh-my-posh windows
+  block:
+    - name: Install Chocolatey packages
+      win_chocolatey:
+        state: latest
+        name:
+        - oh-my-posh
+  when: ansible_distribution in "Windows"

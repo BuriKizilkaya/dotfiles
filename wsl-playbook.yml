@@ -1,0 +1,25 @@
+- hosts: win_wsl
+  become: true
+  pre_tasks:
+    - name: pre-run | update package cache (debian, ubuntu, etc)
+      tags: always
+      apt: update_cache=yes
+      changed_when: False
+      when: ansible_distribution in ["Debian", "Ubuntu"]
+
+    - name: system setup | base packages | install utility packages
+      tags: packages,system,settings
+      package:
+        state: latest
+        name:
+          - curl
+          - htop
+          - tmux
+          - traceroute
+          - wget
+          - whois
+          - stow
+  
+  roles:
+    - shell
+    - terminal-software/git

@@ -1,0 +1,26 @@
+- name: install git in linux
+  block:
+    - name: install git
+      package:
+        state: latest
+        name:
+          - git
+
+    - name: remove file .gitconfig
+      ansible.builtin.file:
+        path: "/home/{{ ansible_user }}/.gitconfig"
+        state: absent
+
+    - import_tasks: "roles/common/stow_directory.yml"
+      vars:
+        directory: git
+  when: ansible_distribution in ["Debian", "Ubuntu", "Pop!_OS"]
+
+- name: install git in windows
+  block:
+    - name: Install Chocolatey packages
+      win_chocolatey:
+        state: latest
+        name:
+          - git
+  when: ansible_distribution in "Windows"

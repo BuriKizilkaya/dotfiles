@@ -1,0 +1,57 @@
+- hosts: linux_host
+  connection: local
+  become: true
+  pre_tasks:
+    - name: Distribution
+      tags: always
+      debug: msg="{{ ansible_distribution }}"
+
+    - name: pre-run | update package cache (debian, ubuntu, etc)
+      tags: always
+      apt: update_cache=yes
+      changed_when: False
+
+    - name: system setup | base packages | install utility packages
+      tags: packages,system,settings
+      package:
+        state: latest
+        name:
+          - curl
+          - htop
+          - tmux
+          - traceroute
+          - wget
+          - whois
+          - stow
+
+- hosts: linux_host
+  connection: local
+  become: true
+  become_user: "{{ ansible_user }}"
+  roles:
+    - shell
+    - terminal-software/git
+    - terminal-software/python
+    - terminal-software/docker
+    - desktop-software
+
+  tasks:
+    - import_tasks: "roles/common/setup_user.yml"
+
+# end of run cleanup and reporting
+- hosts: linux_host
+  connection: local
+  become: true
+  tasks:
+    - name: cleanup package cache (debian and ubuntu)
+      tags: always
+      apt:
+        autoclean: yes
+      changed_when: false
+      when: ansible_distribution in ["Debian", "Pop!_OS", "Ubuntu"]
+
+    - name: autoremove orphan packages (debian and ubuntu)
+      tags: always
+      apt:
+        autoremove: yes
+        purge: yes

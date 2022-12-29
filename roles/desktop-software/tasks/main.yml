@@ -1,0 +1,9 @@
+- name: include roles
+  ansible.builtin.include_role:
+    name: '{{ role_path }}/{{ roleinputvar }}'
+  loop:
+    - "1password"
+    - "terminator"
+    - "vscode"
+  loop_control:
+    loop_var: roleinputvar

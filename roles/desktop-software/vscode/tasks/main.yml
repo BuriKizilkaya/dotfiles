@@ -1,0 +1,19 @@
+- name: install vscode on linux
+  tags: desktop-software, vscode
+  block:
+    - name: Install VSCode
+      become: true
+      become_user: root
+      apt:
+        deb: https://go.microsoft.com/fwlink/?LinkID=760868
+  when: ansible_distribution in ["Debian", "Ubuntu", "Pop!_OS"]
+
+- name: install vscode on windows
+  tags: desktop-software, vscode
+  block:
+    - name: Install Chocolatey packages
+      win_chocolatey:
+        state: latest
+        name:
+          - vscode
+  when: ansible_distribution in "Windows"

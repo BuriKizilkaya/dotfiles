@@ -1,0 +1,6 @@
+- name: setup shell
+  tags: shell
+  block:
+    - import_tasks: ohmyzsh.yml
+    - import_tasks: ohmyposh.yml
+    

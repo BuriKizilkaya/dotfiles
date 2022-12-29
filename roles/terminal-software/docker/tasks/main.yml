@@ -1,0 +1,45 @@
+- name: install docker in linux
+  tags: docker, terminal-software
+  block:
+    - name: install dependency for docker
+      become: true
+      become_user: root
+      package:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: latest
+
+    - name: get lsb_release
+      shell: lsb_release -cs
+      register: lsb_release
+
+    - name: Add Docker GPG apt Key
+      become: true
+      become_user: root
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: add Docker repository
+      become: true
+      become_user: root
+      shell: |
+        echo \
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+        $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+    - name: install docker
+      become: true
+      become_user: root
+      package:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: latest
+        update_cache: true
+  when: ansible_distribution in ["Debian", "Ubuntu", "Pop!_OS"]
