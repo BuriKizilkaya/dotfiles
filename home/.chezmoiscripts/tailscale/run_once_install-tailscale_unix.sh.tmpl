@@ -1,0 +1,21 @@
+{{ if and (ne .chezmoi.os "windows") (or (eq .env "dev_computer") (eq .env "home_lab")) -}}
+#!/usr/bin/env bash
+# Install Tailscale on Linux and macOS.
+
+set -euo pipefail
+
+if command -v tailscale &>/dev/null; then
+    echo "==> Tailscale already installed, skipping."
+    exit 0
+fi
+
+echo "==> Installing Tailscale..."
+
+{{ if eq .chezmoi.os "darwin" -}}
+brew install --cask tailscale
+echo "  Tailscale installed. Open the Tailscale app to connect."
+{{ else -}}
+curl -fsSL https://tailscale.com/install.sh | sh
+echo "  Tailscale installed. Run 'sudo tailscale up' to connect."
+{{ end -}}
+{{ end -}}

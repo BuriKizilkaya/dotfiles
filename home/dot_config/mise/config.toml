@@ -3,9 +3,10 @@ experimental = true
 
 [tools]
 just = "latest"
-opencode = "latest"
 starship = "latest"
-chezmoi = "latest"
+
+[tools.opencode]
+version = "latest"
 
 [tools."github:rtk-ai/rtk"]
 version = "latest"

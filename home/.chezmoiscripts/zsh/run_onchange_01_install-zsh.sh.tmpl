@@ -11,7 +11,7 @@ echo "==> Setting up zsh..."
 # Switch default shell to zsh (not needed in devcontainers — no login shell)
 if [ "$SHELL" != "$(which zsh)" ]; then
     echo "  Switching default shell to zsh..."
-    chsh -s "$(which zsh)" "$USER"
+    sudo chsh -s "$(which zsh)" "$USER"
 fi
 {{ end -}}
 

@@ -1,0 +1,78 @@
+name: Test Dotfiles
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  # ── Linux ─────────────────────────────────────────────────────────────────
+  linux:
+    name: Linux (Ubuntu)
+    runs-on: ubuntu-latest
+    env:
+      DOTFILES_ENV: dev_computer
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends zsh unzip
+
+      - name: Run bootstrap
+        run: bash bootstrap.sh
+
+      - name: Run assertions
+        run: |
+          export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
+          bash tests/assert.sh
+  
+  # ── Devcontainer ───────────────────────────────────────────────────────
+  devcontainer:
+    name: Devcontainer
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run run-devcontainer-tests.sh
+        run: bash tests/run-devcontainer-tests.sh
+
+  # ── macOS ─────────────────────────────────────────────────────────────────
+  macos:
+    name: macOS
+    runs-on: macos-latest
+    env:
+      DOTFILES_ENV: dev_computer
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run bootstrap
+        run: bash bootstrap.sh
+
+      - name: Run assertions
+        run: |
+          export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
+          bash tests/assert.sh
+
+  # ── Windows ───────────────────────────────────────────────────────────────
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run bootstrap
+        shell: pwsh
+        run: .\bootstrap.ps1
+
+      - name: Run assertions
+        shell: pwsh
+        run: |
+          $env:PATH = "$env:USERPROFILE\.local\bin;$env:USERPROFILE\.local\share\mise\shims;$env:PATH"
+          pwsh tests\assert.ps1

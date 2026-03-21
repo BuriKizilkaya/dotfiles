@@ -24,9 +24,6 @@ home/                          # chezmoi source directory (mirrors $HOME)
     └── windows-terminal/      # ~/.config/windows-terminal/  (Windows only)
         └── settings.json
 
-scripts/
-
-
 tests/
 ├── Dockerfile                 # Ubuntu 24.04 test container
 ├── run-tests.sh               # Build image and run tests
@@ -112,3 +109,9 @@ chezmoi apply
 | PowerShell       | `~/.config/powershell/`            | Windows               |
 | Terminator       | `~/.config/terminator/config`      | Linux                 |
 | Windows Terminal | `~/.config/windows-terminal/`      | Windows               |
+
+## Editors
+
+### VSCode
+
+VSCode is intentionally excluded from this repo. Use VSCode's built-in Settings Sync to sync your VSCode settings across machines without needing to manage them in this repo. The github acocount is used as for the sync, so make sure to use the same account on all machines.

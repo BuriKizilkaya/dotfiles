@@ -1,3 +1,6 @@
+# zsh completion (provides git tab-completion and all other zsh completions)
+autoload -Uz compinit && compinit
+
 # zsh plugins (installed to ~/.zsh/plugins by chezmoi script)
 ZSH_PLUGINS="$HOME/.zsh/plugins"
 source "$ZSH_PLUGINS/zsh-autosuggestions/zsh-autosuggestions.zsh"

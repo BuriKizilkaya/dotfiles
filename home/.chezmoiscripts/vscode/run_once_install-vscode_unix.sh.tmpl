@@ -1,0 +1,31 @@
+{{ if and (ne .chezmoi.os "windows") (eq .env "dev_computer") -}}
+#!/usr/bin/env bash
+# Install Visual Studio Code on Linux and macOS.
+
+set -euo pipefail
+
+if command -v code &>/dev/null; then
+    echo "==> VS Code already installed, skipping."
+    exit 0
+fi
+
+echo "==> Installing VS Code..."
+
+{{ if eq .chezmoi.os "darwin" -}}
+brew install --cask visual-studio-code
+{{ else -}}
+# Linux: install via the official Microsoft apt repository
+curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /tmp/packages.microsoft.gpg
+sudo install -D -o root -g root -m 644 /tmp/packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
+rm -f /tmp/packages.microsoft.gpg
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/packages.microsoft.gpg] \
+https://packages.microsoft.com/repos/code stable main" \
+    | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null
+
+sudo apt-get update -q
+sudo apt-get install -y code
+{{ end -}}
+
+echo "  VS Code installed."
+{{ end -}}

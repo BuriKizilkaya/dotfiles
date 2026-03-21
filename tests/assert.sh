@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Assertion script — runs inside the Docker container after bootstrap.
+# Assertion script — runs after bootstrap on Linux and macOS.
 # Checks that all dotfiles are applied and tools are available.
 
 set -e

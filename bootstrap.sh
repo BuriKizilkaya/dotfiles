@@ -11,24 +11,14 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOTFILES_ENV="${DOTFILES_ENV:-dev_computer}"
-
 if [[ "$DOTFILES_ENV" != "devcontainer" && "$DOTFILES_ENV" != "dev_computer" && "$DOTFILES_ENV" != "home_lab" ]]; then
     echo "Error: DOTFILES_ENV must be one of: devcontainer, dev_computer, home_lab" >&2
     exit 1
 fi
-
 echo "==> Environment: $DOTFILES_ENV"
 
-echo "==> Installing mise..."
-if ! command -v mise &>/dev/null; then
-    curl https://mise.run | sh
-fi
-mise self-update
-
-echo "==> Installing tools with mise..."
-mkdir -p "$HOME/.config/mise"
-cp "$DOTFILES_DIR/home/dot_config/mise/config.toml" "$HOME/.config/mise/config.toml"
-mise install
+echo "==> Installing chezmoi..."
+sh -c "$(curl -fsLS get.chezmoi.io)" -- -b $HOME/.local/bin
 
 echo "==> Applying dotfiles..."
 # Write chezmoi config so the environment is persisted for future runs.

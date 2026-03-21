@@ -1,0 +1,15 @@
+{{ if and (eq .chezmoi.os "windows") (or (eq .env "dev_computer") (eq .env "home_lab")) -}}
+# Install Tailscale on Windows via winget.
+
+$ErrorActionPreference = "Stop"
+
+if (Get-Command tailscale -ErrorAction SilentlyContinue) {
+    Write-Host "==> Tailscale already installed, skipping."
+    exit 0
+}
+
+Write-Host "==> Installing Tailscale (Windows)..." -ForegroundColor Cyan
+winget install --id Tailscale.Tailscale --silent --accept-package-agreements --accept-source-agreements
+
+Write-Host "  Tailscale installed. Open the Tailscale app to connect." -ForegroundColor Green
+{{ end -}}
