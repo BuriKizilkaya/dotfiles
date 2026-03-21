@@ -1,0 +1,37 @@
+{{ if ne .chezmoi.os "windows" -}}
+#!/usr/bin/env bash
+# Install zsh as default shell and set up plugins (no oh-my-zsh).
+# Runs on change (chezmoi tracks the hash of this file).
+
+set -euo pipefail
+
+echo "==> Setting up zsh..."
+
+{{ if ne .env "devcontainer" -}}
+# Switch default shell to zsh (not needed in devcontainers — no login shell)
+if [ "$SHELL" != "$(which zsh)" ]; then
+    echo "  Switching default shell to zsh..."
+    chsh -s "$(which zsh)" "$USER"
+fi
+{{ end -}}
+
+echo "  Installing zsh plugins..."
+ZSH_PLUGINS="$HOME/.zsh/plugins"
+mkdir -p "$ZSH_PLUGINS"
+
+if [ ! -d "$ZSH_PLUGINS/zsh-syntax-highlighting" ]; then
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git \
+        "$ZSH_PLUGINS/zsh-syntax-highlighting"
+else
+    git -C "$ZSH_PLUGINS/zsh-syntax-highlighting" pull --ff-only
+fi
+
+if [ ! -d "$ZSH_PLUGINS/zsh-autosuggestions" ]; then
+    git clone https://github.com/zsh-users/zsh-autosuggestions.git \
+        "$ZSH_PLUGINS/zsh-autosuggestions"
+else
+    git -C "$ZSH_PLUGINS/zsh-autosuggestions" pull --ff-only
+fi
+
+echo "  zsh setup complete."
+{{ end -}}

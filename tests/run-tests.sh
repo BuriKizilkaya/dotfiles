@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Run dotfiles tests inside a fresh Ubuntu Docker container.
-# Usage: bash tests/run-tests.sh [--no-cache]
+# Usage: bash tests/run-tests.sh
 #
 # Set GITHUB_TOKEN to avoid GitHub API rate limits, either via a .env file
 # in the repo root or directly in your environment:
@@ -11,12 +11,7 @@ set -e
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 IMAGE="dotfiles-test"
-NO_CACHE=""
 SECRET_ARG=""
-
-if [[ "$1" == "--no-cache" ]]; then
-    NO_CACHE="--no-cache"
-fi
 
 # Load .env from repo root if it exists (does not override already-set vars)
 if [[ -f "$DOTFILES_DIR/.env" ]]; then
@@ -31,7 +26,7 @@ if [[ -n "${GITHUB_TOKEN:-}" ]]; then
 fi
 
 echo "==> Building test image..."
-docker build $NO_CACHE $SECRET_ARG \
+docker build --no-cache $SECRET_ARG \
     -f "$DOTFILES_DIR/tests/Dockerfile" \
     -t "$IMAGE" \
     "$DOTFILES_DIR"

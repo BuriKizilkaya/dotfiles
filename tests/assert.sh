@@ -75,7 +75,6 @@ assert_file_contains "$HOME/.gitconfig" "defaultBranch = main"
 assert_file_contains "$HOME/.gitconfig" "autocrlf = false"
 
 assert_file "$HOME/.zshrc"
-assert_file_contains "$HOME/.zshrc" "oh-my-zsh"
 assert_file_contains "$HOME/.zshrc" "starship init zsh"
 assert_file_contains "$HOME/.zshrc" "mise activate"
 

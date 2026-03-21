@@ -15,6 +15,7 @@ COPY . /dotfiles
 
 # Run bootstrap — GITHUB_TOKEN is mounted as a secret so it is never stored
 # in the image layer. mise uses it automatically to avoid API rate limits.
+# DOTFILES_ENV=devcontainer is set to handle docker image as devcontainer environment
 RUN --mount=type=secret,id=github_token \
     GITHUB_TOKEN="$(cat /run/secrets/github_token 2>/dev/null || true)" \
     DOTFILES_ENV=devcontainer \

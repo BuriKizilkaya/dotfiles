@@ -1,21 +1,13 @@
-# Path to your oh-my-zsh installation.
-export ZSH="$HOME/.oh-my-zsh"
-
-# Fix the Insecure completition-dependent directories and files
-ZSH_DISABLE_COMPFIX=true
-
-ZSH_THEME=""
-
-# Which plugins would you like to load?
-plugins=(
-    git
-    zsh-autosuggestions
-    zsh-syntax-highlighting
-)
-source $ZSH/oh-my-zsh.sh
+# zsh plugins (installed to ~/.zsh/plugins by chezmoi script)
+ZSH_PLUGINS="$HOME/.zsh/plugins"
+source "$ZSH_PLUGINS/zsh-autosuggestions/zsh-autosuggestions.zsh"
+source "$ZSH_PLUGINS/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
 # Starship
 eval "$(starship init zsh)"
+
+# Add ~/.local/bin to PATH for user-installed tools
+export PATH="$HOME/.local/bin:$PATH"
 
 # Start Docker daemon automatically when logging in if not running.
 DOCKERRUNNING=`ps aux | grep dockerd | grep -v grep`
@@ -31,55 +23,9 @@ for file in $HOME/.profile*; do
   source "$file"
 done
 
-# add Pulumi to the PATH
-PULUMI_HOME="$HOME/.pulumi"
-if [ -d $PULUMI_HOME ]; then
-  export PATH="$PATH:$PULUMI_HOME/bin"
-fi
-
-# Wasmer
-WASMER_DIR="/home/$USER/.wasmer"
-if [ -d $WASMER_DIR ]; then
-  [ -s "$WASMER_DIR/wasmer.sh" ] && source "$WASMER_DIR/wasmer.sh"
-fi
-
-# Dotnet
-DOTNET_ROOT="/usr/share/dotnet"
-if [ -d $DOTNET_ROOT ]; then
-  export PATH="$PATH:$DOTNET_ROOT"
-fi
-
-# Go
-GOBIN="/home/$USER/go/bin/"
-if [ -d "$GOBIN" ]; then
-  export PATH="$PATH:$GOBIN"
-fi
-GOINST="/usr/local/go/bin"
-if [ -d "$GOINST" ]; then
-  export PATH="$PATH:$GOINST"
-fi
-
-# Flutter
-FLUTTER_DIR="/home/$USER/flutter/bin"
-if [ -d "$FLUTTER_DIR" ]; then
-  export PATH="$PATH:$FLUTTER_DIR"
-fi
-
-# Rust
-RUST_DIR="$HOME/.cargo/bin"
-if [ -d "$RUST_DIR" ]; then
-  export PATH="$PATH:$RUST_DIR"
-fi
-
 # SSH Agent 1password
 if [ -S "$HOME/.1password/agent.sock" ]; then
   export SSH_AUTH_SOCK="$HOME/.1password/agent.sock"
-fi
-
-# opencode
-OPENCODE_DIR="/home/$USER/.opencode/bin"
-if [ -d "$OPENCODE_DIR" ]; then
-  export PATH="$PATH:$OPENCODE_DIR"
 fi
 
 # mise
