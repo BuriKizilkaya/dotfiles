@@ -61,6 +61,13 @@ assert_symlink() {
 # ── Tests ──────────────────────────────────────────────────────────────────
 
 echo ""
+echo "── Chezmoi config ────────────────────────────────────────────────────"
+
+assert_file "$HOME/.config/chezmoi/chezmoi.toml"
+assert_file_contains "$HOME/.config/chezmoi/chezmoi.toml" "env"
+assert_symlink "$HOME/.local/share/chezmoi"
+
+echo ""
 echo "── Dotfiles (chezmoi) ────────────────────────────────────────────────"
 
 assert_file "$HOME/.gitconfig"
@@ -76,8 +83,8 @@ assert_file "$HOME/.profile.dev"
 assert_file_contains "$HOME/.profile.dev" "groot"
 assert_file_contains "$HOME/.profile.dev" "alias isodate"
 
-assert_file "$HOME/.config/starship/starship.toml"
-assert_file_contains "$HOME/.config/starship/starship.toml" "add_newline"
+assert_file "$HOME/.config/starship.toml"
+assert_file_contains "$HOME/.config/starship.toml" "add_newline"
 
 assert_file "$HOME/.config/mise/config.toml"
 assert_file_contains "$HOME/.config/mise/config.toml" "just"

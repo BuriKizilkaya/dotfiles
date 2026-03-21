@@ -25,13 +25,15 @@ home/                          # chezmoi source directory (mirrors $HOME)
         └── settings.json
 
 scripts/
-├── bootstrap.sh               # Linux/macOS setup script
-└── bootstrap.ps1              # Windows setup script
+
 
 tests/
 ├── Dockerfile                 # Ubuntu 24.04 test container
 ├── run-tests.sh               # Build image and run tests
 └── assert.sh                  # Test assertions (runs inside container)
+
+bootstrap.sh                   # Linux/macOS setup script
+bootstrap.ps1                  # Windows setup script
 ```
 
 ## Quick Start
@@ -45,14 +47,16 @@ sudo apt-get update
 sudo apt-get install -y curl git zsh unzip curl wget ca-certificates 
 ```
 
+#### Bootstrap
+
 ```bash
-bash scripts/bootstrap.sh
+bash bootstrap.sh
 ```
 
 ### Windows (PowerShell as Administrator)
 
 ```powershell
-.\scripts\bootstrap.ps1
+.\bootstrap.ps1
 ```
 
 ## How it works

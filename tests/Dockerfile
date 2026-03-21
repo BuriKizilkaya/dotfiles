@@ -13,8 +13,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy dotfiles repo into the image
 COPY . /dotfiles
 
-# Run bootstrap
-RUN bash /dotfiles/scripts/bootstrap.sh
+# Run bootstrap — GITHUB_TOKEN is mounted as a secret so it is never stored
+# in the image layer. mise uses it automatically to avoid API rate limits.
+RUN --mount=type=secret,id=github_token \
+    GITHUB_TOKEN="$(cat /run/secrets/github_token 2>/dev/null || true)" \
+    DOTFILES_ENV=devcontainer \
+    bash /dotfiles/bootstrap.sh
 
 # Default: run the test assertions
 CMD ["bash", "/dotfiles/tests/assert.sh"]

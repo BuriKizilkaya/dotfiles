@@ -1,6 +1,7 @@
 [data]
     name = "Burak"
     email = "burak.kizilkaya@outlook.com"
+    env = {{ .env | default "dev_computer" | quote }}
 
 [diff]
     pager = "less -R"

@@ -11,3 +11,13 @@
 
 # Ignore windows terminal settings on all platforms. It will be symlinked with the script bootstrap.ps1
 .config/windows-terminal
+
+{{/* Environment-based exclusions
+     .env is set by bootstrap.sh via DOTFILES_ENV (devcontainer | dev_computer | home_lab)
+     Use these blocks to exclude files that don't apply to a given environment.
+     Example:
+{{ if eq .env "devcontainer" }}
+# Exclude desktop/GUI tools in devcontainers
+.config/terminator
+{{ end }}
+*/}}
