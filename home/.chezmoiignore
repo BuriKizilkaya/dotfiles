@@ -1,0 +1,13 @@
+{{ if ne .chezmoi.os "windows" }}
+# Ignore Windows-only configs on Linux and macOS
+.config/powershell
+{{ end }}
+
+{{ if eq .chezmoi.os "windows" }}
+# Ignore Linux and macOS-only configs on Windows
+.zshrc
+.profile.dev
+{{ end }}
+
+# Ignore windows terminal settings on all platforms. It will be symlinked with the script bootstrap.ps1
+.config/windows-terminal

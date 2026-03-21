@@ -1,0 +1,12 @@
+[settings]
+experimental = true
+
+[tools]
+just = "latest"
+opencode = "latest"
+starship = "latest"
+chezmoi = "latest"
+
+[tools."github:rtk-ai/rtk"]
+version = "latest"
+post_install = "rtk --init --opencode"

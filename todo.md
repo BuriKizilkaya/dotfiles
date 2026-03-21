@@ -1,0 +1,1 @@
+- [ ] distinguis betwen dev_computer or homelab_member (server)
