@@ -81,16 +81,15 @@ jobs:
   wsl:
     name: WSL
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/wsl
     env:
       DOTFILES_ENV: dev_computer
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      WSL_DISTRO_NAME: Ubuntu
     steps:
       - uses: actions/checkout@v4
 
       - name: Install system dependencies
-        run: apt-get update && apt-get install -y --no-install-recommends zsh unzip curl
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends zsh unzip curl
 
       - name: Run bootstrap
         run: bash bootstrap.sh
@@ -98,4 +97,4 @@ jobs:
       - name: Run assertions
         run: |
           export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
-          bash tests/assert.sh
+          bash tests/assert_wsl.sh
