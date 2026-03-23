@@ -76,3 +76,26 @@ jobs:
         run: |
           $env:PATH = "$env:USERPROFILE\.local\bin;$env:USERPROFILE\.local\share\mise\shims;$env:PATH"
           pwsh tests\assert.ps1
+
+  # ── WSL ──────────────────────────────────────────────────────────────────
+  wsl:
+    name: WSL
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/wsl
+    env:
+      DOTFILES_ENV: dev_computer
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: apt-get update && apt-get install -y --no-install-recommends zsh unzip curl
+
+      - name: Run bootstrap
+        run: bash bootstrap.sh
+
+      - name: Run assertions
+        run: |
+          export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
+          bash tests/assert.sh
