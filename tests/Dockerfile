@@ -1,5 +1,7 @@
 FROM ubuntu:24.04
 
+WORKDIR /dotfiles
+
 # Avoid interactive prompts during package install
 ENV DEBIAN_FRONTEND=noninteractive
 ENV HOME=/root
@@ -19,7 +21,7 @@ COPY . /dotfiles
 RUN --mount=type=secret,id=github_token \
     GITHUB_TOKEN="$(cat /run/secrets/github_token 2>/dev/null || true)" \
     DOTFILES_ENV=devcontainer \
-    bash /dotfiles/bootstrap.sh
+    bash /dotfiles/bootstrap_devcontainer.sh
 
 # Default: run the test assertions
 CMD ["bash", "/dotfiles/tests/assert.sh"]

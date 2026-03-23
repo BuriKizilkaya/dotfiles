@@ -55,6 +55,19 @@ compfs() {
 
 # Aliases
 alias isodate='date -u +"%Y-%m-%dT%H:%M:%SZ"'
+
+# ls aliases (eza with fallback to ls)
+if command -v eza &> /dev/null; then
+  alias ls='eza --color=always --group-directories-first'
+  alias ll='eza -lah --color=always --group-directories-first'
+  alias la='eza -a --color=always --group-directories-first'
+  alias lt='eza --tree --color=always --group-directories-first'
+else
+  alias ls='ls --color=auto'
+  alias ll='ls -lah --color=auto'
+  alias la='ls -a --color=auto'
+fi
+
 alias serv="python3 -m http.server"
 alias pip='noglob pip'
 alias python="python3"

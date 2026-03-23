@@ -24,6 +24,11 @@ if [ "$(uname)" != "Darwin" ] && [ -z "$DOCKERRUNNING" ] && [ -n "$DOCKER_CMD_EX
   disown
 fi
 
+# mise (activate early so mise-managed tools are on PATH for profile aliases)
+if command -v mise &> /dev/null; then
+  eval "$(mise activate zsh)"
+fi
+
 # Source all profile files
 for file in $HOME/.profile*; do
   source "$file"
@@ -34,7 +39,3 @@ if [ -S "$HOME/.1password/agent.sock" ]; then
   export SSH_AUTH_SOCK="$HOME/.1password/agent.sock"
 fi
 
-# mise
-if command -v mise &> /dev/null; then
-  eval "$(mise activate zsh)"
-fi

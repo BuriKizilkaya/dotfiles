@@ -4,6 +4,7 @@ experimental = true
 [tools]
 just = "latest"
 starship = "latest"
+eza = "latest"
 
 [tools.opencode]
 version = "latest"

@@ -33,7 +33,7 @@ docker build --no-cache $SECRET_ARG \
 
 echo ""
 echo "==> Running tests..."
-docker run --rm -e "DOTFILES_ENV=devcontainer" "$IMAGE"
+docker run --rm "$IMAGE"
 
 echo ""
 echo "All tests passed."
