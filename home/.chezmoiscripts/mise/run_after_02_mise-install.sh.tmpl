@@ -13,8 +13,7 @@ if ! command -v mise &>/dev/null; then
     echo "  mise not found, installing..."
     curl https://mise.run | sh
 else
-    echo "  mise already installed, updating..."
-    mise self-update
+    echo "  mise already installed"
 fi
 
 echo "==> Installing mise tools..."
