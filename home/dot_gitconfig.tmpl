@@ -2,7 +2,7 @@
 [core]
 	editor = code --wait
 	autocrlf = false
-	ssh = {{ if eq .chezmoi.os "windows" }}ssh.exe{{ else }}ssh{{ end }}
+	ssh = {{- if or (eq .chezmoi.os "windows") (eq .chezmoi.osRelease.id "wsl") }}ssh.exe{{ else }}ssh{{ end }}
 
 [help]
 	autocorrect = 1
