@@ -35,7 +35,7 @@ mkdir -p "$HOME/.local/share"
 ln -sfn "$DOTFILES_DIR" "$HOME/.local/share/chezmoi"
 
 # chezmoi apply runs all dotfiles + the run_once_/run_onchange_ hooks
-chezmoi apply
+$HOME/.local/bin/chezmoi apply
 
 echo ""
 echo "Done! You may need to restart your shell."
