@@ -7,10 +7,11 @@ set -euo pipefail
 
 echo "==> Setting up zsh..."
 
-# Switch default shell to zsh (not needed in devcontainers — no login shell)
+# Switch default shell to zsh
+current_user="${USER:-$(whoami)}"
 if [ "$SHELL" != "$(which zsh)" ]; then
     echo "  Switching default shell to zsh..."
-    sudo chsh -s "$(which zsh)" "$USER"
+    sudo chsh -s "$(which zsh)" "$current_user"
 fi
 
 echo "  Installing zsh plugins..."
