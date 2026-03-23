@@ -1,3 +1,11 @@
+# Add ~/.local/bin to PATH for user-installed tools
+export PATH="$HOME/.local/bin:$PATH"
+
+# mise (activate early so mise-managed tools are on PATH for everything below)
+if command -v mise &> /dev/null; then
+  eval "$(mise activate zsh)"
+fi
+
 # zsh completion (provides git tab-completion and all other zsh completions)
 autoload -Uz compinit && compinit
 
@@ -10,10 +18,9 @@ source "$ZSH_PLUGINS/zsh-autosuggestions/zsh-autosuggestions.zsh"
 source "$ZSH_PLUGINS/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
 # Starship
-eval "$(starship init zsh)"
-
-# Add ~/.local/bin to PATH for user-installed tools
-export PATH="$HOME/.local/bin:$PATH"
+if command -v starship &> /dev/null; then
+  eval "$(starship init zsh)"
+fi
 
 # Start Docker daemon automatically when logging in if not running.
 DOCKERRUNNING=`ps aux | grep dockerd | grep -v grep`
@@ -22,11 +29,6 @@ if [ "$(uname)" != "Darwin" ] && [ -z "$DOCKERRUNNING" ] && [ -n "$DOCKER_CMD_EX
   echo "Starting Docker daemon..."
   sudo dockerd > /dev/null 2>&1 &
   disown
-fi
-
-# mise (activate early so mise-managed tools are on PATH for profile aliases)
-if command -v mise &> /dev/null; then
-  eval "$(mise activate zsh)"
 fi
 
 # Source all profile files
