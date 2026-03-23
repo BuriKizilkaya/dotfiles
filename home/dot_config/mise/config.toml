@@ -2,7 +2,6 @@
 experimental = true
 
 [tools]
-just = "latest"
 starship = "latest"
 eza = "latest"
 
