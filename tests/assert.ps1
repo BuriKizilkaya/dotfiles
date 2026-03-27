@@ -57,7 +57,6 @@ Assert-File "$env:USERPROFILE\.config\starship.toml"
 Assert-FileContains "$env:USERPROFILE\.config\starship.toml" "add_newline"
 
 Assert-File "$env:USERPROFILE\.config\mise\config.toml"
-Assert-FileContains "$env:USERPROFILE\.config\mise\config.toml" "just"
 Assert-FileContains "$env:USERPROFILE\.config\mise\config.toml" "opencode"
 
 Assert-File "$env:USERPROFILE\.config\powershell\Microsoft.PowerShell_profile.ps1"
@@ -68,7 +67,6 @@ Write-Host "── Tools ──────────────────�
 Assert-Command "chezmoi"
 Assert-Command "git"
 Assert-Command "mise"
-Assert-Command "just"
 Assert-Command "starship"
 
 # ── Summary ────────────────────────────────────────────────────────────────

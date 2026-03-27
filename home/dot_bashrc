@@ -1,0 +1,39 @@
+# Add ~/.local/bin to PATH for user-installed tools
+export PATH="$HOME/.local/bin:$PATH"
+
+# mise (activate early so mise-managed tools are on PATH for everything below)
+if command -v mise &> /dev/null; then
+  eval "$(mise activate bash)"
+fi
+
+# bash completion
+if command -v brew &> /dev/null; then
+  HOMEBREW_PREFIX="$(brew --prefix)"
+  if [ -f "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]; then
+    source "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh"
+  fi
+fi
+
+# Starship
+if command -v starship &> /dev/null; then
+  eval "$(starship init bash)"
+fi
+
+# Start Docker daemon automatically when logging in if not running.
+DOCKERRUNNING=`ps aux | grep dockerd | grep -v grep`
+DOCKER_CMD_EXISTS=`command -v docker`
+if [ "$(uname)" != "Darwin" ] && [ -z "$DOCKERRUNNING" ] && [ -n "$DOCKER_CMD_EXISTS" ]; then
+  echo "Starting Docker daemon..."
+  sudo dockerd > /dev/null 2>&1 &
+  disown
+fi
+
+# Source all profile files
+for file in $HOME/.profile*; do
+  source "$file"
+done
+
+# SSH Agent 1password
+if [ -S "$HOME/.1password/agent.sock" ]; then
+  export SSH_AUTH_SOCK="$HOME/.1password/agent.sock"
+fi

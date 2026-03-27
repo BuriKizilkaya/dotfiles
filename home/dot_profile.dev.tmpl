@@ -53,8 +53,11 @@ compfs() {
     code --diff $1 $2
 }
 
-# Aliases
+# Common aliases
 alias isodate='date -u +"%Y-%m-%dT%H:%M:%SZ"'
+alias serv="python3 -m http.server"
+alias pip='noglob pip'
+alias python="python3"
 
 # ls aliases (eza with fallback to ls)
 if command -v eza &> /dev/null; then
@@ -68,6 +71,9 @@ else
   alias la='ls -a --color=auto'
 fi
 
-alias serv="python3 -m http.server"
-alias pip='noglob pip'
-alias python="python3"
+# SSH aliases
+{{- if (and (eq .chezmoi.os "linux") (.chezmoi.kernel.osrelease | contains "WSL")) }}
+alias ssh='ssh.exe'
+alias ssh-add='ssh-add.exe'
+{{- end }}
+

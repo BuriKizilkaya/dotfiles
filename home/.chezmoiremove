@@ -2,5 +2,4 @@
 
 # Prepend with a `/` to specify a specific path relative to $HOME.
 
-/.zcompdump*
 /.zshrc.pre-oh-my-zsh*

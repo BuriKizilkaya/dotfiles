@@ -1,14 +1,8 @@
-#!/usr/bin/env bash
-# Assertion script — runs after bootstrap on Linux and macOS.
-# Checks that all dotfiles are applied and tools are available.
-
 set -e
 
 PASS=0
 FAIL=0
 ERRORS=()
-
-# ── Helpers ────────────────────────────────────────────────────────────────
 
 pass() {
     echo "  [PASS] $1"
@@ -40,6 +34,8 @@ assert_file_contains() {
     fi
 }
 
+export PATH="${HOME}/.local/bin:${HOME}/.local/share/mise/shims:${PATH}"
+
 assert_command() {
     local cmd="$1"
     if command -v "$cmd" &>/dev/null; then
@@ -58,8 +54,6 @@ assert_symlink() {
     fi
 }
 
-# ── Tests ──────────────────────────────────────────────────────────────────
-
 echo ""
 echo "── Chezmoi config ────────────────────────────────────────────────────"
 
@@ -73,6 +67,8 @@ echo "── Dotfiles (chezmoi) ────────────────
 assert_file "$HOME/.gitconfig"
 assert_file_contains "$HOME/.gitconfig" "defaultBranch = main"
 assert_file_contains "$HOME/.gitconfig" "autocrlf = false"
+# WSL-specific: ssh.exe should be configured
+assert_file_contains "$HOME/.gitconfig" "sshCommand = ssh.exe"
 
 assert_file "$HOME/.zshrc"
 assert_file_contains "$HOME/.zshrc" "starship init zsh"
@@ -99,8 +95,6 @@ assert_command "zsh"
 assert_command "git"
 assert_command "mise"
 assert_command "starship"
-
-# ── Summary ────────────────────────────────────────────────────────────────
 
 echo ""
 echo "──────────────────────────────────────────────────────────────────────"
