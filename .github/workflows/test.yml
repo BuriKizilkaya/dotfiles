@@ -58,21 +58,15 @@ jobs:
           export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
           bash tests/assert.sh
 
-  # ── Windows ───────────────────────────────────────────────────────────────
-  windows:
-    name: Windows
+  # ── WSL ──────────────────────────────────────────────────────────────────
+  wsl:
+    name: WSL
     runs-on: windows-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run bootstrap
+      - name: Run WSL tests
         shell: pwsh
-        run: .\bootstrap.ps1
-
-      - name: Run assertions
-        shell: pwsh
-        run: |
-          $env:PATH = "$env:USERPROFILE\.local\bin;$env:USERPROFILE\.local\share\mise\shims;$env:PATH"
-          pwsh tests\assert.ps1
+        run: pwsh tests/run-wsl-tests.ps1 -Branch ${{ github.head_ref || github.ref_name }}

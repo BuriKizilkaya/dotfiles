@@ -10,4 +10,4 @@ version = "latest"
 
 [tools."github:rtk-ai/rtk"]
 version = "latest"
-post_install = "rtk --init --opencode"
+post_install = "rtk --init -g --opencode"

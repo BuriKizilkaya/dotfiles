@@ -5,52 +5,66 @@ Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/). Supports Linu
 ## Structure
 
 ```
-home/                          # chezmoi source directory (mirrors $HOME)
-├── .chezmoiignore             # skips Windows-only files on Linux/macOS
-├── dot_gitconfig              # ~/.gitconfig
-├── dot_zshrc                  # ~/.zshrc  (Linux/macOS)
-├── dot_profile.dev            # ~/.profile.dev  (shell helpers & aliases)
-├── dot_chezmoi.toml.tmpl      # chezmoi config template
-└── dot_config/
-    ├── mise/
-    │   └── config.toml        # ~/.config/mise/config.toml  (global tools)
-    ├── starship/
-    │   └── starship.toml      # ~/.config/starship/starship.toml
-    ├── terminator/
-    │   └── config             # ~/.config/terminator/config  (Linux only)
-    ├── powershell/            # ~/.config/powershell/  (Windows only)
-    │   ├── Microsoft.PowerShell_profile.ps1
-    │   └── Install-Modules.ps1
-    └── windows-terminal/      # ~/.config/windows-terminal/  (Windows only)
-        └── settings.json
+dotfiles/
+├── home/                          # chezmoi source directory (mirrors $HOME)
+│   ├── dot_bashrc                 # ~/.bashrc
+│   ├── dot_gitconfig.tmpl         # ~/.gitconfig (template)
+│   ├── dot_profile.dev.tmpl       # ~/.profile.dev (shell helpers & aliases)
+│   ├── dot_zshrc                  # ~/.zshrc
+│   ├── dot_chezmoi.toml.tmpl      # chezmoi config
+│   ├── .chezmoiignore             # skips platform-specific files
+│   ├── .chezmoiremove             # files to remove from $HOME
+│   ├── .chezmoiscripts/           # lifecycle scripts
+│   │   ├── run_before_01_install-zsh.sh.tmpl
+│   │   └── run_after_02_mise-install.{sh,ps1}.tmpl
+│   └── dot_config/
+│       ├── mise/config.toml
+│       ├── starship.toml
+│       ├── terminator/config      # Linux
+│       ├── powershell/            # Windows
+│       │   ├── Microsoft.PowerShell_profile.ps1
+│       │   └── Install-Modules.ps1
+│       └── windows-terminal/      # Windows
+│           └── settings.json
+├── tests/                         # Docker-based test suite
+├── bootstrap.sh                   # Linux/macOS bootstrap
+└── bootstrap.ps1                   # Windows bootstrap
+```
 
-tests/
-├── Dockerfile                 # Ubuntu 24.04 test container
-├── run-tests.sh               # Build image and run tests
-└── assert.sh                  # Test assertions (runs inside container)
+## Platform Requirements
 
-bootstrap.sh                   # Linux/macOS setup script
-bootstrap.ps1                  # Windows setup script
+### Linux (Ubuntu/Debian)
+
+```bash
+sudo apt-get update
+sudo apt-get install -y curl git zsh unzip ca-certificates
+```
+
+### macOS
+
+```bash
+# Requires Homebrew (https://brew.sh/)
+brew install curl git zsh
+```
+
+### Windows (PowerShell as Administrator)
+
+```powershell
+# Requirements:
+# - PowerShell 5.1+ or PowerShell 7+
+# - Git for Windows (https://git-scm.com/download/win)
+# - Execution policy must allow scripts: Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
 ## Quick Start
 
 ### Linux / macOS
 
-#### Requirements
-
-```bash
-sudo apt-get update
-sudo apt-get install -y curl git zsh unzip curl wget ca-certificates 
-```
-
-#### Bootstrap
-
 ```bash
 bash bootstrap.sh
 ```
 
-### Windows (PowerShell as Administrator)
+### Windows
 
 ```powershell
 .\bootstrap.ps1
@@ -58,14 +72,12 @@ bash bootstrap.sh
 
 ## How it works
 
-- **chezmoi** manages all files in `home/` and applies them to `$HOME`
+- **chezmoi** manages all files under `home/` and applies them to `$HOME`
 - Files prefixed with `dot_` map to dotfiles (e.g. `dot_zshrc` → `~/.zshrc`)
 - Files ending in `.tmpl` are Go templates rendered per-machine (OS, username, etc.)
-- `.chezmoiignore` skips Windows-only folders (`powershell/`, `windows-terminal/`) on Linux/macOS
-- `bootstrap.ps1` symlinks Windows-specific paths that chezmoi can't target directly:
-  - PowerShell profile → `$PROFILE`
-  - Windows Terminal → `%LOCALAPPDATA%\Packages\Microsoft.WindowsTerminal_*\LocalState\`
-- VSCode is excluded — use VSCode's built-in Settings Sync instead
+- `run_before_*` scripts execute before chezmoi applies; `run_after_*` scripts execute after
+- `.chezmoiignore` skips platform-specific folders on other platforms
+- `bootstrap.ps1` symlinks Windows paths that chezmoi can't target directly
 
 ## Testing
 
@@ -75,24 +87,17 @@ Run the full test suite in a clean Ubuntu 24.04 Docker container:
 bash tests/run-tests.sh
 ```
 
-Use `--no-cache` to force a full rebuild:
+Force a full rebuild:
 
 ```bash
 bash tests/run-tests.sh --no-cache
 ```
 
-The tests verify that all dotfiles are placed correctly and all tools (`chezmoi`, `mise`, `just`, `starship`, etc.) are available after bootstrap.
-
 ## Adding new dotfiles
 
 ```bash
-# Track an existing file
 chezmoi add ~/.someconfig
-
-# Edit a tracked file
 chezmoi edit ~/.someconfig
-
-# Apply changes
 chezmoi apply
 ```
 
@@ -101,17 +106,11 @@ chezmoi apply
 | Tool             | Config file                        | Platforms             |
 | ---------------- | ---------------------------------- | --------------------- |
 | git              | `~/.gitconfig`                     | Linux, macOS, Windows |
+| bash             | `~/.bashrc`                        | Linux, macOS          |
 | zsh + oh-my-zsh  | `~/.zshrc`                         | Linux, macOS          |
 | Shell helpers    | `~/.profile.dev`                   | Linux, macOS          |
 | mise             | `~/.config/mise/config.toml`       | Linux, macOS, Windows |
-| starship         | `~/.config/starship/starship.toml` | Linux, macOS, Windows |
-| VSCode           | built-in Settings Sync             | —                     |
-| PowerShell       | `~/.config/powershell/`            | Windows               |
+| starship         | `~/.config/starship.toml`          | Linux, macOS, Windows |
 | Terminator       | `~/.config/terminator/config`      | Linux                 |
+| PowerShell       | `~/.config/powershell/`            | Windows               |
 | Windows Terminal | `~/.config/windows-terminal/`      | Windows               |
-
-## Editors
-
-### VSCode
-
-VSCode is intentionally excluded from this repo. Use VSCode's built-in Settings Sync to sync your VSCode settings across machines without needing to manage them in this repo. The github acocount is used as for the sync, so make sure to use the same account on all machines.

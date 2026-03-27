@@ -8,15 +8,17 @@
 
 set -euo pipefail
 
+MISE_BIN="${HOME}/.local/bin/mise"
+
 echo "==> Checking mise installation..."
-if ! command -v mise &>/dev/null; then
+if [ ! -x "$MISE_BIN" ]; then
     echo "  mise not found, installing..."
     curl https://mise.run | sh
-else
-    echo "  mise already installed"
 fi
 
+export PATH="${HOME}/.local/bin:${PATH}"
+
 echo "==> Installing mise tools..."
-mise install
+"$MISE_BIN" install
 echo "  mise tools up to date."
 {{ end -}}

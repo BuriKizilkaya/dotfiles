@@ -2,7 +2,7 @@
 [core]
 	editor = code --wait
 	autocrlf = false
-	ssh = {{ if eq .chezmoi.os "windows" }}ssh.exe{{ else }}ssh{{ end }}
+	sshCommand = {{ if (and (eq .chezmoi.os "linux") (.chezmoi.kernel.osrelease | contains "WSL")) }}ssh.exe{{ else }}ssh{{ end }}
 
 [help]
 	autocorrect = 1
@@ -34,6 +34,8 @@
 	save = !git add -A && git commit -m 'SAVEPOINT'
 	# undo the last commit, but keep the changes available
 	undo = reset HEAD~1 --mixed
+	# interactive rebase against last commit on main
+	rebase-main = "!f() { git rebase -i $(git merge-base HEAD main); }; f"
 
 [init]
 	defaultBranch = main

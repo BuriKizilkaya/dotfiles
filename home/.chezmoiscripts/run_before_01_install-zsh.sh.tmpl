@@ -9,25 +9,21 @@ echo "==> Setting up zsh..."
 
 # Switch default shell to zsh
 current_user="${USER:-$(whoami)}"
-if [ "$SHELL" != "$(which zsh)" ]; then
-    echo "  Switching default shell to zsh..."
-    sudo chsh -s "$(which zsh)" "$current_user"
-fi
+echo "  Switching default shell to zsh..."
+sudo chsh -s "$(which zsh)" "$current_user"
 
 echo "  Installing zsh plugins..."
 ZSH_PLUGINS="$HOME/.zsh/plugins"
 mkdir -p "$ZSH_PLUGINS"
 
 if [ ! -d "$ZSH_PLUGINS/zsh-syntax-highlighting" ]; then
-    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git \
-        "$ZSH_PLUGINS/zsh-syntax-highlighting"
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$ZSH_PLUGINS/zsh-syntax-highlighting"
 else
     git -C "$ZSH_PLUGINS/zsh-syntax-highlighting" pull --ff-only
 fi
 
 if [ ! -d "$ZSH_PLUGINS/zsh-autosuggestions" ]; then
-    git clone https://github.com/zsh-users/zsh-autosuggestions.git \
-        "$ZSH_PLUGINS/zsh-autosuggestions"
+    git clone https://github.com/zsh-users/zsh-autosuggestions.git "$ZSH_PLUGINS/zsh-autosuggestions"
 else
     git -C "$ZSH_PLUGINS/zsh-autosuggestions" pull --ff-only
 fi
