@@ -12,6 +12,15 @@ autoload -Uz compinit && compinit
 # Case-insensitive tab completion (matches lowercase, uppercase, camelCase, etc.)
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 
+# Menu selection: arrow keys to navigate completions visually (like oh-my-zsh)
+zstyle ':completion:*' menu select
+
+# Key bindings for menu navigation (fixes Ctrl+Arrow showing ;5d)
+bindkey '\e[1;5D' vi-backward-word  # Ctrl+Left
+bindkey '\e[1;5C' vi-forward-word   # Ctrl+Right
+bindkey '\e[1;5A' up-line-or-history  # Ctrl+Up
+bindkey '\e[1;5B' down-line-or-history  # Ctrl+Down
+
 # zsh plugins (installed to ~/.zsh/plugins by chezmoi script)
 ZSH_PLUGINS="$HOME/.zsh/plugins"
 source "$ZSH_PLUGINS/zsh-autosuggestions/zsh-autosuggestions.zsh"
