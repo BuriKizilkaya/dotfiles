@@ -20,6 +20,9 @@ jobs:
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends zsh unzip
 
+      - name: Install mise
+        run: curl https://mise.run | sh
+
       - name: Run bootstrap
         run: bash bootstrap.sh
 
@@ -49,6 +52,9 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install mise
+        run: curl https://mise.run | sh
 
       - name: Run bootstrap
         run: bash bootstrap.sh
