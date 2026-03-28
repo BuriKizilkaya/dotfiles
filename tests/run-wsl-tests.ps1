@@ -33,6 +33,9 @@ try {
     Write-Host "==> Installing dependencies in WSL..." -ForegroundColor Cyan
     Invoke-Wsl @("-d", $WSL_DISTRO, "bash", "-c", "apt-get update && apt-get install -y --no-install-recommends curl git zsh unzip wget ca-certificates sudo build-essential")
 
+    Write-Host "==> Installing mise in WSL..." -ForegroundColor Cyan
+    Invoke-Wsl @("-d", $WSL_DISTRO, "bash", "-c", "curl https://mise.run | sh")
+
     Write-Host "==> Cloning and bootstrapping dotfiles in WSL (branch: $Branch, env: $DotfilesEnv)..." -ForegroundColor Cyan
     Invoke-Wsl @("-d", $WSL_DISTRO, "bash", "-c", "cd /root && git clone --branch $Branch $DOTFILES_REPO && cd dotfiles && DOTFILES_ENV=$DotfilesEnv bash bootstrap.sh")
 

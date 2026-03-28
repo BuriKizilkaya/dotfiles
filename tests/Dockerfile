@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     sudo curl git zsh unzip curl wget ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+# Install mise
+RUN curl https://mise.run | sh
+
 # Copy dotfiles repo into the image
 COPY . /dotfiles
 
