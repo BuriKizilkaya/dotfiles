@@ -8,6 +8,8 @@
 
 set -euo pipefail
 
+export PATH="${HOME}/.local/bin:${PATH}"
+
 echo "==> Installing mise tools..."
 mise install
 echo "  mise tools up to date."
