@@ -2,7 +2,7 @@
 # Re-runs whenever ~/.config/mise/config.toml changes (chezmoi tracks the hash).
 # Ensures any newly added tools in config.toml get installed automatically
 # on the next `chezmoi apply`.
-# mise config hash: {{ include "dot_config/mise/config.toml" | sha256sum }}
+# mise config hash: {{ include "dot_config/mise/conf.d/common.toml" | sha256sum }}
 
 Write-Host "==> Installing mise tools..."
 mise install

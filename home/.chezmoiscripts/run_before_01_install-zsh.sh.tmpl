@@ -2,6 +2,7 @@
 #!/usr/bin/env bash
 # Install zsh as default shell and set up plugins (no oh-my-zsh).
 # Runs on change (chezmoi tracks the hash of this file).
+# hash: {{ include ".chezmoiscripts/run_before_01_install-zsh.sh.tmpl" | sha256sum }}
 
 set -euo pipefail
 
