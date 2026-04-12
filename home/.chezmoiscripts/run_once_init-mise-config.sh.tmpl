@@ -1,0 +1,16 @@
+{{ if ne .chezmoi.os "windows" -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+CONFIG_FILE="{{ joinPath .chezmoi.homeDir ".config/mise/config.toml" }}"
+
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "==> Initializing manual mise config file..."
+    mkdir -p "$(dirname "$CONFIG_FILE")"
+    echo '[tools]' > "$CONFIG_FILE"
+    echo "# Manual tools installed via 'mise use -g' will be added here" >> "$CONFIG_FILE"
+    echo "  Done."
+else
+    echo "==> mise config file already exists, skipping initialization."
+fi
+{{ end -}}
