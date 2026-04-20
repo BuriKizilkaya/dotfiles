@@ -4,6 +4,8 @@
 # on the next `chezmoi apply`.
 # mise config hash: {{ include "dot_config/mise/conf.d/common.toml" | sha256sum }}
 
+$env:PATH = "$env:LOCALAPPDATA\mise\shims;$env:PATH"
+
 Write-Host "==> Installing mise tools..."
 mise install
 Write-Host "  mise tools up to date."

@@ -3,7 +3,7 @@ experimental = true
 
 [tools]
 starship = "latest"
-eza = "latest"
+"aqua:eza-community/eza" = "latest"
 
 [tools.opencode]
 version = "latest"

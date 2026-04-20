@@ -6,7 +6,6 @@ Readme.md
 # Ignore files, which not needed on linux and macos
 {{ if ne .chezmoi.os "windows" }}
 .config/powershell
-
 **/*.ps1
 {{ end }}
 
@@ -15,6 +14,5 @@ Readme.md
 .zshrc
 .profile.dev
 .chezmoi.toml
-
 **/*.sh
 {{ end }}
