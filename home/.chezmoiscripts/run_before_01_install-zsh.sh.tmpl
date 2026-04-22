@@ -10,8 +10,13 @@ echo "==> Setting up zsh..."
 
 # Switch default shell to zsh
 current_user="${USER:-$(whoami)}"
+ZSH_PATH="$(command -v zsh)"
 echo "  Switching default shell to zsh..."
-sudo chsh -s "$(which zsh)" "$current_user"
+if ! grep -qxF "$ZSH_PATH" /etc/shells; then
+    echo "  Adding $ZSH_PATH to /etc/shells..."
+    echo "$ZSH_PATH" | sudo tee -a /etc/shells > /dev/null
+fi
+sudo chsh -s "$ZSH_PATH" "$current_user"
 
 echo "  Installing zsh plugins..."
 ZSH_PLUGINS="$HOME/.zsh/plugins"
