@@ -38,6 +38,7 @@ dotfiles/
 ```bash
 sudo apt-get update
 sudo apt-get install -y curl git zsh unzip ca-certificates
+curl https://mise.run | sh
 ```
 
 ### macOS
@@ -45,6 +46,7 @@ sudo apt-get install -y curl git zsh unzip ca-certificates
 ```bash
 # Requires Homebrew (https://brew.sh/)
 brew install curl git zsh
+curl https://mise.run | sh
 ```
 
 ### Windows (PowerShell as Administrator)
@@ -54,6 +56,7 @@ brew install curl git zsh
 # - PowerShell 5.1+ or PowerShell 7+
 # - Git for Windows (https://git-scm.com/download/win)
 # - Execution policy must allow scripts: Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+winget install jdx.mise
 ```
 
 ## Quick Start

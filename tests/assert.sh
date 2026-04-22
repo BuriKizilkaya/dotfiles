@@ -86,7 +86,8 @@ assert_file "$HOME/.config/starship.toml"
 assert_file_contains "$HOME/.config/starship.toml" "add_newline"
 
 assert_file "$HOME/.config/mise/config.toml"
-assert_file_contains "$HOME/.config/mise/config.toml" "opencode"
+assert_file "$HOME/.config/mise/conf.d/common.toml"
+assert_file_contains "$HOME/.config/mise/conf.d/common.toml" "opencode"
 
 assert_file "$HOME/.config/terminator/config"
 assert_file_contains "$HOME/.config/terminator/config" "background_color"
