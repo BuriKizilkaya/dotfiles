@@ -1,20 +1,16 @@
-# Ignore windows terminal settings on all platforms. It will be symlinked with the script bootstrap.ps1
-.config/windows-terminal
-
 Readme.md
 
 # Ignore files, which not needed on linux and macos
 {{ if ne .chezmoi.os "windows" }}
 .config/powershell
-
-**/*.ps1
+.config/windows-terminal
 {{ end }}
 
 # Ignore files, which not needed on windows
 {{ if eq .chezmoi.os "windows" }}
+.bashrc
 .zshrc
 .profile.dev
 .chezmoi.toml
-
 **/*.sh
 {{ end }}

@@ -22,5 +22,9 @@ Set-PSReadLineOption -MaximumHistoryCount 4096
 # Search history with up/down arrows based on what you've typed
 Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
 Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
-Set-PSReadLineOption -PredictionViewStyle ListView
-Set-PSReadLineOption -PredictionSource History
+
+# Prediction features require an interactive terminal — skip in scripts / CI
+if ([System.Environment]::UserInteractive -and $Host.Name -eq 'ConsoleHost') {
+    Set-PSReadLineOption -PredictionViewStyle ListView
+    Set-PSReadLineOption -PredictionSource History
+}

@@ -1,0 +1,15 @@
+{{- if eq .chezmoi.os "windows" }}
+$ErrorActionPreference = "Stop"
+
+$ConfigFile = "{{ joinPath .chezmoi.homeDir ".config/mise/config.toml" }}"
+
+if (-not (Test-Path $ConfigFile)) {
+    Write-Host "==> Initializing manual mise config file..." -ForegroundColor Cyan
+    New-Item -ItemType Directory -Force -Path (Split-Path $ConfigFile) | Out-Null
+    Set-Content -Path $ConfigFile -Value '[tools]'
+    Add-Content -Path $ConfigFile -Value "# Manual tools installed via 'mise use -g' will be added here"
+    Write-Host "  Done." -ForegroundColor Green
+} else {
+    Write-Host "==> mise config file already exists, skipping initialization." -ForegroundColor Cyan
+}
+{{- end }}

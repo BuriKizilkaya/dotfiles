@@ -1,0 +1,6 @@
+Include ~/.ssh/1Password/config
+
+Host *
+{{ if ne .chezmoi.os "windows" -}}
+  IdentityAgent ~/.1password/agent.sock
+{{ end -}}
