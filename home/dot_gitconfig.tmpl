@@ -2,7 +2,13 @@
 [core]
 	editor = code --wait
 	autocrlf = false
-	sshCommand = {{ if (and (eq .chezmoi.os "linux") (.chezmoi.kernel.osrelease | contains "WSL")) }}ssh.exe{{ else }}ssh{{ end }}
+	sshCommand = {{ if eq .chezmoi.os "windows" -}}
+		C:/Windows/System32/OpenSSH/ssh.exe
+	{{- else if and (eq .chezmoi.os "linux") (.chezmoi.kernel.osrelease | contains "WSL") -}}
+		ssh.exe
+	{{- else -}}
+		ssh
+	{{- end }}
 
 [help]
 	autocorrect = 1

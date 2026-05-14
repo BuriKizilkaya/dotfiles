@@ -1,15 +1,12 @@
 [data]
-    name = "Burak"
-    email = "burak.kizilkaya@outlook.com"
     env = {{ .env | default "dev_computer" | quote }}
 
 [diff]
-    pager = "less -R"
-
-[diff]
-    {{ if lookPath "delta" -}}command = "delta"
-    {{ end -}}
+    pager   = "less -R"
     exclude = ["scripts"]
+    {{- if lookPath "delta" }}
+    command = "delta"
+    {{- end }}
 
 {{ if lookPath "code" -}}
 [edit]

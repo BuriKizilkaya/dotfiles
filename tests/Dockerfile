@@ -9,7 +9,7 @@ ENV USER=root
 ENV PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    sudo curl git zsh unzip curl wget ca-certificates \
+    sudo curl git zsh unzip curl wget ca-certificates python3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install mise
@@ -27,4 +27,4 @@ RUN --mount=type=secret,id=github_token \
     bash /dotfiles/bootstrap_devcontainer.sh
 
 # Default: run the test assertions
-CMD ["bash", "/dotfiles/tests/assert.sh"]
+CMD ["python3", "/dotfiles/tests/assert.py"]

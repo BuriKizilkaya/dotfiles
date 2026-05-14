@@ -1,0 +1,41 @@
+{{- if eq .chezmoi.os "windows" }}
+# Re-runs whenever PowerShell profile files change.
+# profile hash: {{ include "dot_config/powershell/Microsoft.PowerShell_profile.ps1" | sha256sum }}
+# modules hash: {{ include "dot_config/powershell/Install-Modules.ps1" | sha256sum }}
+
+$ErrorActionPreference = "Stop"
+
+# Resolve the correct PowerShell profile directory regardless of OneDrive redirection.
+$ProfileDir = Split-Path $PROFILE
+
+$ConfigDir = "{{ joinPath .chezmoi.homeDir ".config/powershell" }}"
+
+Write-Host "==> Setting up PowerShell profile..." -ForegroundColor Cyan
+
+if (-not (Test-Path $ProfileDir)) {
+    New-Item -ItemType Directory -Force -Path $ProfileDir | Out-Null
+}
+
+$ProfileSrc = Join-Path $ConfigDir "Microsoft.PowerShell_profile.ps1"
+$ProfileDst = $PROFILE
+
+$ResolvedSrc = (Resolve-Path $ProfileSrc).Path
+$ResolvedDst = if (Test-Path $ProfileDst) { (Resolve-Path $ProfileDst).Path } else { $null }
+
+if ($ResolvedSrc -eq $ResolvedDst) {
+    Write-Host "  Profile source and destination are the same file, skipping copy." -ForegroundColor Green
+} else {
+    Write-Host "  Copying $ProfileSrc -> $ProfileDst" -ForegroundColor Cyan
+    Copy-Item -Path $ProfileSrc -Destination $ProfileDst -Force
+    Write-Host "  Profile copied." -ForegroundColor Green
+}
+
+$InstallModules = Join-Path $ConfigDir "Install-Modules.ps1"
+if (Test-Path $InstallModules) {
+    Write-Host "==> Installing PowerShell modules..." -ForegroundColor Cyan
+    & $InstallModules
+    Write-Host "  Modules installed." -ForegroundColor Green
+} else {
+    Write-Host "  Install-Modules.ps1 not found, skipping." -ForegroundColor Yellow
+}
+{{- end }}

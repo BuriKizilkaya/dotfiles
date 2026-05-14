@@ -9,6 +9,14 @@ $ErrorActionPreference = "Stop"
 $DOTFILES_REPO = "https://github.com/BuriKizilkaya/dotfiles.git"
 $WSL_DISTRO = "UbuntuDotFilesTests"
 
+# Bridge GITHUB_TOKEN from Windows into WSL so mise can make authenticated
+# GitHub API requests and avoid rate-limit failures during tool installation.
+# WSLENV is the official WSL mechanism for passing env vars across the boundary.
+# /u means the value is passed as-is (no path translation).
+if ($env:GITHUB_TOKEN) {
+    $env:WSLENV = "GITHUB_TOKEN/u"
+}
+
 function Invoke-Wsl {
     param([string[]]$Arguments)
     wsl @Arguments
@@ -31,7 +39,7 @@ Invoke-Wsl @("--import", $WSL_DISTRO, "$env:TEMP\Ubuntu", $wslRootfs)
 
 try {
     Write-Host "==> Installing dependencies in WSL..." -ForegroundColor Cyan
-    Invoke-Wsl @("-d", $WSL_DISTRO, "bash", "-c", "apt-get update && apt-get install -y --no-install-recommends curl git zsh unzip wget ca-certificates sudo build-essential")
+    Invoke-Wsl @("-d", $WSL_DISTRO, "bash", "-c", "apt-get update && apt-get install -y --no-install-recommends curl git zsh unzip wget ca-certificates sudo python3")
 
     Write-Host "==> Installing mise in WSL..." -ForegroundColor Cyan
     Invoke-Wsl @("-d", $WSL_DISTRO, "bash", "-c", "curl https://mise.run | sh")
@@ -40,7 +48,7 @@ try {
     Invoke-Wsl @("-d", $WSL_DISTRO, "bash", "-c", "cd /root && git clone --branch $Branch $DOTFILES_REPO && cd dotfiles && DOTFILES_ENV=$DotfilesEnv bash bootstrap.sh")
 
     Write-Host "==> Running assertions in WSL" -ForegroundColor Cyan
-    Invoke-Wsl @("-d", $WSL_DISTRO, "bash", "-c", "cd /root/dotfiles && bash tests/assert_wsl.sh")
+    Invoke-Wsl @("-d", $WSL_DISTRO, "bash", "-c", "cd /root/dotfiles && python3 tests/assert.py --platform wsl")
 
     Write-Host "==> WSL tests completed successfully." -ForegroundColor Green
 }
