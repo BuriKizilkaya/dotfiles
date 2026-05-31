@@ -3,9 +3,9 @@ experimental = true
 
 [tools]
 starship = "latest"
-python = "3.14"
 uv = "latest"
 "eza" = "latest"
+pi = "latest"
 
 [tools.opencode]
 version = "latest"
