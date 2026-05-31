@@ -50,7 +50,6 @@ dotfiles/
 
 ```bash
 sudo apt-get install -y curl git zsh unzip ca-certificates
-curl https://mise.run | sh
 ```
 
 **Bootstrap**
@@ -61,7 +60,7 @@ DOTFILES_ENV=dev_computer bash bootstrap.sh
 
 > `DOTFILES_ENV` options: `dev_computer` (default) · `home_lab` · `devcontainer`
 
-`bootstrap.sh` installs chezmoi, writes the chezmoi config, symlinks the repo, and runs `chezmoi apply`. The `run_after` hooks then install mise tools and configure zsh with plugins.
+`bootstrap.sh` installs mise, installs chezmoi, writes the chezmoi config, symlinks the repo, and runs `chezmoi apply`. The `run_after` hooks then install mise tools and configure zsh with plugins.
 
 ---
 
@@ -71,7 +70,6 @@ DOTFILES_ENV=dev_computer bash bootstrap.sh
 
 ```bash
 xcode-select --install       # provides git and curl
-curl https://mise.run | sh
 ```
 
 **Bootstrap**
@@ -88,11 +86,6 @@ DOTFILES_ENV=dev_computer bash bootstrap.sh
 
 - [Git for Windows](https://git-scm.com/download/win)
 - [PowerShell 7+](https://aka.ms/powershell)
-- [mise](https://mise.jdx.dev/)
-
-```powershell
-winget install jdx.mise
-```
 
 **Bootstrap** (run PowerShell as Administrator)
 
@@ -101,7 +94,7 @@ Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 .\bootstrap.ps1
 ```
 
-`bootstrap.ps1` installs chezmoi, writes the chezmoi config, symlinks the repo, and runs `chezmoi apply`. The `run_after` hooks then install mise tools and set up the PowerShell profile.
+`bootstrap.ps1` installs mise via `winget`, installs chezmoi, writes the chezmoi config, symlinks the repo, and runs `chezmoi apply`. The `run_after` hooks then install mise tools and set up the PowerShell profile.
 
 > Windows always uses `DOTFILES_ENV=dev_computer`.
 
