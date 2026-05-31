@@ -13,6 +13,14 @@ $DotfilesDir = $PSScriptRoot
 $env:DOTFILES_ENV = "dev_computer"
 Write-Host "==> Environment: $env:DOTFILES_ENV" -ForegroundColor Cyan
 
+Write-Host "==> Installing mise..." -ForegroundColor Cyan
+if (Get-Command mise -ErrorAction SilentlyContinue) {
+    Write-Host "  mise already installed, skipping." -ForegroundColor Green
+} else {
+    winget install --id jdx.mise --silent --accept-source-agreements --accept-package-agreements
+    $env:PATH = "$env:LOCALAPPDATA\mise\shims;$env:PATH"
+}
+
 Write-Host "==> Installing chezmoi..." -ForegroundColor Cyan
 if (-not (Get-Command chezmoi -ErrorAction SilentlyContinue)) {
     iex "&{$(irm 'https://get.chezmoi.io/ps1')} -b '~/bin'"

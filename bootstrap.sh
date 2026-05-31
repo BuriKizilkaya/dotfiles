@@ -9,6 +9,13 @@ if [[ "$DOTFILES_ENV" != "devcontainer" && "$DOTFILES_ENV" != "dev_computer" && 
 fi
 echo "==> Environment: $DOTFILES_ENV"
 
+echo "==> Installing mise..."
+if command -v mise &>/dev/null || [[ -x "$HOME/.local/bin/mise" ]]; then
+    echo "  mise already installed, skipping."
+else
+    curl https://mise.run | sh
+fi
+
 echo "==> Installing chezmoi..."
 sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
 
