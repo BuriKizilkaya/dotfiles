@@ -92,6 +92,13 @@ class Runner:
         else:
             self._fail(f"Symlink missing: {p}")
 
+    def assert_file_absent(self, path: "str | Path") -> None:
+        p = Path(path)
+        if not p.exists():
+            self._pass(f"File absent: {p}")
+        else:
+            self._fail(f"File should not exist: {p}")
+
     # -- summary --
 
     def summary(self) -> int:
@@ -160,6 +167,16 @@ def run_linux(r: Runner, home: Path, *, wsl: bool = False) -> None:
 
     r.section("Linux tools")
     r.assert_command("zsh")
+
+    # .chezmoiignore strips the host's 1Password SSH config inside devcontainers.
+    # WSL routes SSH through the Windows host (ssh.exe alias), so the file is unused there.
+    r.section("Env-conditional ignores")
+    ssh_config = home / ".ssh" / "config"
+    dotfiles_env = os.environ.get("DOTFILES_ENV", "dev_computer")
+    if dotfiles_env == "devcontainer" or wsl:
+        r.assert_file_absent(ssh_config)
+    else:
+        r.assert_file(ssh_config)
 
 
 def run_windows(r: Runner, home: Path) -> None:

@@ -7,6 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV HOME=/root
 ENV USER=root
 ENV PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
+ENV DOTFILES_ENV=devcontainer
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     sudo curl git zsh unzip curl wget ca-certificates python3 \

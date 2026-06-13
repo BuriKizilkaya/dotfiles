@@ -6,6 +6,11 @@ Readme.md
 .config/windows-terminal
 {{ end }}
 
+# Skip the host's 1Password SSH config inside devcontainers
+{{ if eq .env "devcontainer" }}
+.ssh/config
+{{ end }}
+
 # Ignore files, which not needed on windows
 {{ if eq .chezmoi.os "windows" }}
 .bashrc
@@ -13,4 +18,8 @@ Readme.md
 .profile.dev
 .chezmoi.toml
 **/*.sh
+{{ end }}
+
+{{ if eq .env "devcontainer" }}
+.ssh/config
 {{ end }}
