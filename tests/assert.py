@@ -168,11 +168,12 @@ def run_linux(r: Runner, home: Path, *, wsl: bool = False) -> None:
     r.section("Linux tools")
     r.assert_command("zsh")
 
-    # .chezmoiignore strips the host's 1Password SSH config inside devcontainers
+    # .chezmoiignore strips the host's 1Password SSH config inside devcontainers.
+    # WSL routes SSH through the Windows host (ssh.exe alias), so the file is unused there.
     r.section("Env-conditional ignores")
     ssh_config = home / ".ssh" / "config"
     dotfiles_env = os.environ.get("DOTFILES_ENV", "dev_computer")
-    if dotfiles_env == "devcontainer":
+    if dotfiles_env == "devcontainer" or wsl:
         r.assert_file_absent(ssh_config)
     else:
         r.assert_file(ssh_config)
