@@ -11,7 +11,9 @@ from helpers.runner import Runner
 
 def assert_windows_dotfiles(r: Runner, home: Path) -> None:
     r.section("Windows dotfiles")
-    r.assert_file(home / ".ssh/config")
+    # Windows configures 1Password's SSH agent via the desktop app, so a
+    # hand-written ~/.ssh/config is unnecessary and is stripped by .chezmoiignore.
+    r.assert_file_absent(home / ".ssh" / "config")
 
     r.assert_file(home / ".config/powershell/Microsoft.PowerShell_profile.ps1")
     r.assert_file(home / ".config/powershell/Install-Modules.ps1")

@@ -17,5 +17,6 @@ Readme.md
 .zshrc
 .profile.dev
 .chezmoi.toml
+.ssh/config
 **/*.sh
 {{ end }}
