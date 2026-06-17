@@ -1,11 +1,13 @@
+{{ if eq .chezmoi.os "linux" -}}
 Include ~/.ssh/1Password/config
 
 Host *
-{{- if eq .chezmoi.os "darwin" }}
-  ForwardAgent yes
-  IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
-{{- else if ne .chezmoi.os "windows" }}
   ForwardAgent yes
   IdentityAgent ~/.1password/agent.sock
-{{- end }}
 
+{{ else if eq .chezmoi.os "darwin" -}}
+Host *
+  ForwardAgent yes
+  IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+
+{{ end -}}
