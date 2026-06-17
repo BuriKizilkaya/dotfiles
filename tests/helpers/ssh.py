@@ -30,8 +30,12 @@ def assert_ssh_config(r: Runner, home: Path, platform: Platform) -> None:
     r.assert_file_contains(ssh_config, "ForwardAgent yes")
     r.assert_file_contains(ssh_config, "IdentityAgent")
 
-    # 1Password's Apple Developer Team ID is identical on every Mac.
     if platform.is_macos:
         r.assert_file_contains(ssh_config, "2BUA8C4S2C.com.1password")
-    else:
+        # macOS configures 1Password via the system-wide Group Containers path
+        # above, not the per-user ~/.1password/agent.sock.
+        r.assert_file_not_contains(ssh_config, "Include ~/.ssh/1Password/config")
+    elif platform.is_linux:
+        # Linux includes the legacy 1Password config and the Linux-style agent socket.
+        r.assert_file_contains(ssh_config, "Include ~/.ssh/1Password/config")
         r.assert_file_contains(ssh_config, "~/.1password/agent.sock")

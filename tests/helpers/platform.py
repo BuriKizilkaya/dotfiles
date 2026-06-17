@@ -19,6 +19,10 @@ class Platform(Enum):
         return self in (Platform.LINUX, Platform.DARWIN, Platform.WSL)
 
     @property
+    def is_linux(self) -> bool:
+        return self is Platform.LINUX
+
+    @property
     def is_macos(self) -> bool:
         return self is Platform.DARWIN
 

@@ -71,6 +71,17 @@ class Runner:
         else:
             self._fail(f"File should not exist: {p}")
 
+    def assert_file_not_contains(self, path: "str | Path", pattern: str) -> None:
+        p = Path(path)
+        try:
+            content = p.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            content = ""
+        if p.is_file() and pattern not in content:
+            self._pass(f"File {p.name} does not contain {pattern!r}")
+        else:
+            self._fail(f"File {p} unexpectedly contains {pattern!r}")
+
     # -- summary --
 
     def summary(self) -> int:

@@ -17,9 +17,6 @@ Readme.md
 .zshrc
 .profile.dev
 .chezmoi.toml
-**/*.sh
-{{ end }}
-
-{{ if eq .env "devcontainer" }}
 .ssh/config
+**/*.sh
 {{ end }}
