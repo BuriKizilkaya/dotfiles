@@ -9,6 +9,7 @@ Readme.md
 # Skip the host's 1Password SSH config inside devcontainers
 {{ if eq .env "devcontainer" }}
 .ssh/config
+.config/ghostty
 {{ end }}
 
 # Ignore files, which not needed on windows
