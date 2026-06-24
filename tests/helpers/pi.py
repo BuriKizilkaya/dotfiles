@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 from helpers.runner import Runner
@@ -43,12 +44,16 @@ def run_cli(
     if extra_env:
         env.update(extra_env)
 
+    # On Windows, mise shims are .cmd batch files which CreateProcess cannot
+    # execute directly (only .exe files work without shell=True).  Using
+    # shell=True delegates to cmd.exe which handles .cmd resolution correctly.
     result = subprocess.run(
         ["pi", *args],
         capture_output=True,
         text=True,
         env=env,
         timeout=timeout,
+        shell=(sys.platform == "win32"),
     )
     return result.returncode, result.stdout, result.stderr
 
