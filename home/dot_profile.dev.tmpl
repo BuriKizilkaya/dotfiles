@@ -1,3 +1,11 @@
+# GNU coreutils on macOS (BSD userland replacement)
+{{- if eq .chezmoi.os "darwin" }}
+if [ -d "/opt/homebrew/opt/coreutils/libexec/gnubin" ]; then
+  export PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
+  export MANPATH="/opt/homebrew/opt/coreutils/libexec/gnuman:$MANPATH"
+fi
+{{- end }}
+
 ## Functions
 cheat() {
   curl -s "cheat.sh/$1";
