@@ -32,9 +32,7 @@ def assert_ssh_config(r: Runner, home: Path, platform: Platform) -> None:
 
     if platform.is_macos:
         r.assert_file_contains(ssh_config, "2BUA8C4S2C.com.1password")
-        # macOS configures 1Password via the system-wide Group Containers path
-        # above, not the per-user ~/.1password/agent.sock.
-        r.assert_file_not_contains(ssh_config, "Include ~/.ssh/1Password/config")
+        r.assert_file_contains(ssh_config, "Include ~/.ssh/1Password/config")
     elif platform.is_linux:
         # Linux includes the legacy 1Password config and the Linux-style agent socket.
         r.assert_file_contains(ssh_config, "Include ~/.ssh/1Password/config")
