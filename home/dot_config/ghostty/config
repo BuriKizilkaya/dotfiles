@@ -1,2 +1,4 @@
 font-family = CaskaydiaCove Nerd Font Mono
 font-size = 16
+working-directory = home
+window-inherit-working-directory = false
