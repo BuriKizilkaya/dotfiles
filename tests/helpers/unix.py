@@ -18,7 +18,43 @@ def assert_zshrc(r: Runner, home: Path) -> None:
     r.assert_file_contains(home / ".zshrc", "mise activate")
     r.assert_file_contains(home / ".zshrc", "zoxide init zsh")
     r.assert_file_not_contains(home / ".zshrc", "SSH_AUTH_SOCK")
+    r.assert_file_contains(home / ".zshrc", '"$TERM" == "xterm-ghostty"')
     r.assert_command_succeeds(["zsh", "-lc", 'source "$HOME/.zshrc"'], "Source ~/.zshrc")
+
+    def assert_term(remote: bool, initial: str, expected: str) -> None:
+        env = os.environ.copy()
+        env["TERM"] = initial
+        if remote:
+            env["SSH_CONNECTION"] = "192.0.2.1 12345 192.0.2.2 22"
+        else:
+            env.pop("SSH_CONNECTION", None)
+        result = subprocess.run(
+            [
+                "zsh",
+                "-fc",
+                'source "$1"; print -r -- "__TERM__${TERM}"',
+                "zsh",
+                str(home / ".zshrc"),
+            ],
+            capture_output=True,
+            text=True,
+            env=env,
+            check=False,
+        )
+        actual = next(
+            (line.removeprefix("__TERM__") for line in result.stdout.splitlines() if line.startswith("__TERM__")),
+            "",
+        )
+        context = "remote" if remote else "local"
+        if result.returncode == 0 and actual == expected:
+            r._pass(f"{context} TERM {initial!r} resolves to {expected!r}")
+        else:
+            r._fail(
+                f"{context} TERM {initial!r} should resolve to {expected!r}, got {actual!r}"
+            )
+
+    assert_term(True, "xterm-ghostty", "xterm-256color")
+    assert_term(False, "xterm-ghostty", "xterm-ghostty")
 
 
 def assert_bashrc(r: Runner, home: Path) -> None:
