@@ -35,7 +35,7 @@ duplicated lines (e.g. "fix duplicated lines", "improve coverage").
    ```bash
    # Set these in your shell (or ask the user to provide them):
    export SONARQUBE_CLI_TOKEN=<token>
-   export SONARQUBE_CLI_ORG=konplan          # the SonarCloud organization slug
+   export SONARQUBE_CLI_ORG=<organization-slug>  # the SonarCloud organization slug
    ```
 
    Verify:
@@ -98,7 +98,7 @@ scan has completed for that branch.
 Coverage and duplicated lines are *measures*, not issues, so they are **not**
 returned by `sonar list issues`. Fetch them via the SonarQube measures API using
 the CLI's generic `sonar api get` command. Replace `<projectKey>` with the key
-from `sonar-project.properties` (e.g. `konplan_<app>`).
+from `sonar-project.properties`.
 
 Project-level summary for the current branch:
 
