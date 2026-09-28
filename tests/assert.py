@@ -53,6 +53,7 @@ from helpers.unix import (  # noqa: E402
     assert_wsl_gitconfig,
     assert_zshrc,
 )
+from helpers.herdr import assert_herdr_config  # noqa: E402
 from helpers.pi import assert_pi_cli  # noqa: E402
 from helpers.windows import (  # noqa: E402
     assert_windows_dotfiles,
@@ -70,6 +71,7 @@ def run_common(r: Runner, home: Path, platform: Platform) -> None:
     assert_core_tools(r)
     assert_rtk_extensions(r, home, platform)
     assert_pi_cli(r)
+    assert_herdr_config(r, home)
 
 
 def run_unix(r: Runner, home: Path, platform: Platform) -> None:
