@@ -9,6 +9,7 @@ fzf = "latest"
 ripgrep = "latest"
 fd = "latest"
 pi = "latest"
+herdr = "latest"
 zoxide = "latest"
 
 [tools.opencode]
