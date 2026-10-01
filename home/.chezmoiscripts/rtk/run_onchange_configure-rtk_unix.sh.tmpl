@@ -1,0 +1,14 @@
+{{- if ne .chezmoi.os "windows" -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Re-run when the Mise RTK configuration changes: {{- include "dot_config/mise/conf.d/common.toml" | sha256sum }}
+
+if ! command -v rtk &>/dev/null; then
+    echo "==> RTK is not installed yet, skipping Pi integration."
+    exit 0
+fi
+
+echo "==> Configuring RTK integration for Pi..."
+rtk init -g --agent pi --no-patch --no-trust-filters
+{{- end -}}
