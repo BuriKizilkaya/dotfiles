@@ -10,6 +10,12 @@ const THINKING_LEVELS = ["low", "medium", "high"] as const;
 const COMPLEX_TASK = /\b(architecture|architektur|design|security|sicherheit|threat model|migration|migrate|refactor|projektweit|cross[- ]cutting|mehrere dateien|root cause|race condition|concurrency|parallelism|performance|profil(?:e|ing)|komplex|schwierig)\b/i;
 const LARGE_PROMPT_CHARS = 1_600;
 
+// Explicitly allow only the inexpensive defaults and one stronger fallback tier.
+const MODEL_ALLOWLIST: Record<string, readonly string[]> = {
+  "github-copilot": ["gpt-6-luna", "gpt-5.6-luna", "gpt-5.6-terra", "claude-sonnet-5", "claude-sonnet-5.5", "gemini-3.6-flash"],
+  "openai-codex": ["gpt-6-luna", "gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.5"],
+};
+
 type RouterState = undefined;
 type RouterRequest = ModelRouteRequest<RouterState>;
 
@@ -18,6 +24,8 @@ interface RouterDefinition {
   virtualProvider: string;
   /** Physical provider that must be authenticated in Pi. */
   physicalProvider: string;
+  /** Model IDs the router is allowed to select. */
+  allowedModels: readonly string[];
   contextWindow: number;
 }
 
@@ -58,41 +66,42 @@ function costScore(model: { cost?: { input?: number; output?: number } }): numbe
   return typeof input === "number" && typeof output === "number" ? input + output : null;
 }
 
-function availableModels(ctx: ExtensionContext, provider: string): PricedModel[] {
+function availableModels(ctx: ExtensionContext, provider: string, allowedModels: readonly string[]): PricedModel[] {
+  const allowed = new Set(allowedModels);
   return ctx.modelRegistry
     .getAvailable()
-    .filter((model) => model.provider === provider && model.id !== "auto" && model.type === "chat" && model.reasoning)
+    .filter((model) => model.provider === provider && allowed.has(model.id) && model.type === "chat" && model.reasoning)
     .flatMap((model) => {
       const score = costScore(model);
       return score === null ? [] : [{ id: model.id, score }];
     });
 }
 
-function selectRoute(request: RouterRequest, ctx: ExtensionContext, provider: string): RouteChoice {
+function selectRoute(request: RouterRequest, ctx: ExtensionContext, definition: RouterDefinition): RouteChoice {
+  const provider = definition.physicalProvider;
   // Pi loads its current catalog at startup. Resolve candidates per user request
   // so model-catalog refreshes and changed provider availability take effect too.
-  const candidates = availableModels(ctx, provider).sort((a, b) => a.score - b.score);
+  const candidates = availableModels(ctx, provider, definition.allowedModels).sort((a, b) => a.score - b.score);
   if (candidates.length === 0) {
     throw new Error(`Auto router found no priced reasoning models for ${provider}.`);
   }
 
   const cheapest = candidates[0];
-  const premium = candidates.at(-1)!;
+  const stronger = candidates.at(-1)!;
 
-  // High is an explicit premium override. Low always minimizes model cost.
+  // Thinking level controls reasoning effort, never model price/tier.
   if (request.thinkingLevel === "high") {
-    return { modelId: premium.id, thinkingLevel: "high" };
+    return { modelId: cheapest.id, thinkingLevel: "high" };
   }
   if (request.thinkingLevel === "low") {
     return { modelId: cheapest.id, thinkingLevel: "low" };
   }
 
-  // Medium is automatic: routine, short prompts use the cheapest model with
-  // low reasoning; explicitly complex or large requests use the premium model.
-  // This avoids a separate classifier call.
+  // Routine prompts stay on the cheapest model. Harder tasks use the strongest
+  // explicitly allowed model, never an unlisted high-end model.
   const prompt = lastUserText(request.messages);
   return prompt.length >= LARGE_PROMPT_CHARS || COMPLEX_TASK.test(prompt)
-    ? { modelId: premium.id, thinkingLevel: "medium" }
+    ? { modelId: stronger.id, thinkingLevel: "medium" }
     : { modelId: cheapest.id, thinkingLevel: "low" };
 }
 
@@ -115,7 +124,7 @@ function registerCostRouter(pi: ExtensionAPI, definition: RouterDefinition) {
         };
       }
 
-      return routeTo(ctx, definition.physicalProvider, selectRoute(request, ctx, definition.physicalProvider));
+      return routeTo(ctx, definition.physicalProvider, selectRoute(request, ctx, definition));
     },
   });
 }
@@ -124,12 +133,14 @@ export default function (pi: ExtensionAPI) {
   registerCostRouter(pi, {
     virtualProvider: "github-copilot",
     physicalProvider: "github-copilot",
+    allowedModels: MODEL_ALLOWLIST["github-copilot"],
     contextWindow: 1_100_000,
   });
 
   registerCostRouter(pi, {
     virtualProvider: "openai-codex",
     physicalProvider: "openai-codex",
+    allowedModels: MODEL_ALLOWLIST["openai-codex"],
     contextWindow: 272_000,
   });
 }
