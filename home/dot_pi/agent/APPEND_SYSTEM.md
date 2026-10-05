@@ -10,3 +10,7 @@
 - For ambiguous requirements, ask one focused question before broad investigation.
 - Stop once the requested result is verified; report remaining uncertainty instead of exploring further.
 - Use a new session for unrelated tasks rather than carrying old context forward.
+
+## Response
+
+- Be concise. Report changed files and validation.
