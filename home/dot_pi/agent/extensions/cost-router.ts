@@ -10,25 +10,28 @@ import type {
 
 const execFileAsync = promisify(execFile);
 const THINKING_LEVELS = ["low", "medium", "high"] as const;
-const COMPLEXITY_THRESHOLD = 3;
+const COMPLEXITY_THRESHOLD = 6;
 const DEBUG = process.env.COST_ROUTER_DEBUG === "1";
 
 const COMPLEX_TASK = /\b(design|migration|migrate|refactor|projektweit|cross[- ]cutting|mehrere dateien|root cause|race condition|concurrency|parallelism|performance|profil(?:e|ing)|komplex|schwierig|debug(?:ging)?|fehleranalyse|teststrategie)\b/i;
-const STRONG_TASK = /\b(architecture|architektur|security|sicherheit|threat model)\b/i;
+const STRONG_TASK = /\b(architecture|architektur|security|sicherheit|threat model|race condition|concurrency|parallelism|datenmigration|data migration)\b/i;
 const SIMPLE_TASK = /\b(rename|umbenennen|format(?:ieren)?|typo|rechtschreibung|erklär(?:e|en)|explain|kurz|one[- ]liner)\b/i;
 const CODE_REVIEW_TASK = /\b(code review|review|prüf(?:e|en)|audit)\b/i;
 const FILE_REFERENCE = /(?:[\w./-]+\.(?:[a-z]{1,8}))/gi;
+const CODE_FILE = /\.(?:ts|tsx|js|jsx|mjs|cjs|py|go|rs|java|kt|rb|php|cs|cpp|c|h)$/i;
+const HIGH_RISK_FILE = /(?:^|\/)(?:migrations?|k8s|helm)(?:\/|$)|(?:^|\/)\.github\/workflows\/|\.tf$|\.sql$/i;
+const DOCKERFILE_REFERENCE = /\bDockerfile\b/i;
 const LIST_ITEM = /^\s*(?:\d+[.)]|[-*])\s+/gm;
 const OVERRIDE = /^\s*!(cheap|normal|strong|auto)\b\s*/i;
 
 export const MODEL_TIERS = {
-  "github-copilot": { cheap: "gpt-6-luna", normal: "gpt-5.6-terra", strong: "gpt-6-sol" },
-  "openai-codex": { cheap: "gpt-6-luna", normal: "gpt-5.6-terra", strong: "gpt-6-astra" },
+  "github-copilot": { cheap: "gpt-6-luna", normal: "gpt-5.6-terra", strong: "gpt-6.1-sol" },
+  "openai-codex": { cheap: "gpt-6-luna", normal: "gpt-5.6-terra", strong: "gpt-6.1-sol" },
 } as const;
 
 const MODEL_ALLOWLIST: Record<string, readonly string[]> = {
-  "github-copilot": ["gpt-6-luna", "gpt-5.6-luna", "gpt-5.6-terra", "gpt-6-sol", "claude-sonnet-5", "claude-sonnet-5.5", "gemini-3.6-flash"],
-  "openai-codex": ["gpt-6-luna", "gpt-5.6-luna", "gpt-5.6-terra", "gpt-6-astra", "gpt-5.5"],
+  "github-copilot": ["gpt-6-luna", "gpt-5.6-luna", "gpt-5.6-terra", "gpt-6-sol", "gpt-6.1-sol", "claude-sonnet-5", "claude-sonnet-5.5", "gemini-3.8-flash"],
+  "openai-codex": ["gpt-6-luna", "gpt-5.6-luna", "gpt-5.6-terra", "gpt-6-astra", "gpt-6-sol", "gpt-6.1-sol", "gpt-5.5"],
 };
 
 type ModelTier = "cheap" | "normal" | "strong";
@@ -62,12 +65,13 @@ type ComplexitySignal = {
 };
 
 function scorePromptLength(prompt: string): number {
-  if (prompt.length >= 4_000) return 4;
-  return prompt.length >= 1_600 ? 2 : 0;
+  // Length alone is not a reliable proxy for difficulty.
+  if (prompt.length >= 4_000) return 2;
+  return prompt.length >= 1_600 ? 1 : 0;
 }
 
 function scoreComplexKeywords(prompt: string): number {
-  return COMPLEX_TASK.test(prompt) ? 3 : 0;
+  return COMPLEX_TASK.test(prompt) ? 2 : 0;
 }
 
 function scoreSimpleKeywords(prompt: string): number {
@@ -75,19 +79,27 @@ function scoreSimpleKeywords(prompt: string): number {
 }
 
 function scoreCodeReview(prompt: string): number {
-  return CODE_REVIEW_TASK.test(prompt) ? 3 : 0;
+  return CODE_REVIEW_TASK.test(prompt) ? 2 : 0;
 }
 
 function scoreFileScope(prompt: string): number {
-  return (prompt.match(FILE_REFERENCE) ?? []).length >= 2 ? 3 : 0;
+  const files = prompt.match(FILE_REFERENCE) ?? [];
+  const codeFiles = files.filter((file) => CODE_FILE.test(file)).length;
+  const hasHighRiskFile = files.some((file) => HIGH_RISK_FILE.test(file)) || DOCKERFILE_REFERENCE.test(prompt);
+
+  // Documentation and generic configuration are neutral. Cap the signal so a
+  // long list of paths cannot escalate a task by itself.
+  if (hasHighRiskFile) return 2;
+  return codeFiles >= 2 ? 1 : 0;
 }
 
 function scoreWorkItems(prompt: string): number {
-  return (prompt.match(LIST_ITEM) ?? []).length >= 3 ? 3 : 0;
+  return (prompt.match(LIST_ITEM) ?? []).length >= 3 ? 2 : 0;
 }
 
 function scoreWorktreeScope(changedFiles: number): number {
-  if (changedFiles >= 5) return 3;
+  // Existing worktree size is weak context: it may be unrelated to this task.
+  if (changedFiles >= 5) return 2;
   return changedFiles >= 2 ? 1 : 0;
 }
 
