@@ -1,9 +1,9 @@
 # Add ~/.local/bin to PATH for user-installed tools
 export PATH="$HOME/.local/bin:$PATH"
 
-# Ghostty's terminal mode can cause Zsh input redraw issues over SSH.
-# Use the widely supported xterm capability set for remote sessions instead.
-if [[ -n "${SSH_CONNECTION:-}" && "$TERM" == "xterm-ghostty" ]]; then
+# Normalize missing/generic TERM and Ghostty's TERM for remote sessions.
+if [[ -z "${TERM:-}" || "$TERM" == "-" || "$TERM" == "xterm" || "$TERM" == "xterm-color" ]] || \
+  [[ -n "${SSH_CONNECTION:-}${SSH_TTY:-}" && "$TERM" == "xterm-ghostty" ]]; then
   export TERM="xterm-256color"
 fi
 
