@@ -178,12 +178,14 @@ async function ensureSystemOneModel(signal: AbortSignal): Promise<boolean> {
   } catch (error) {
     systemOneReady = undefined;
     if (DEBUG) console.error("[cost-router] local System One unavailable:", error);
-    return false;
+    throw new Error(`Cost router requires local System One (${OLLAMA_MODEL}). Start Ollama or set COST_ROUTER_OLLAMA_URL.`, { cause: error });
   }
 }
 
-async function classifyWithSystemOne(prompt: string, signal: AbortSignal): Promise<ModelTier | undefined> {
-  if (!(await ensureSystemOneModel(signal))) return undefined;
+async function classifyWithSystemOne(prompt: string, signal: AbortSignal): Promise<ModelTier> {
+  if (!(await ensureSystemOneModel(signal))) {
+    throw new Error(`Cost router requires local System One (${OLLAMA_MODEL}).`);
+  }
 
   try {
     const response = await fetchOllama("/v1/systemone", {
@@ -197,8 +199,8 @@ async function classifyWithSystemOne(prompt: string, signal: AbortSignal): Promi
             type: "choice",
             instructions: "Choose the appropriate coding-agent tier for this task.",
             criteria: {
-              cheap: "Trivial, low-risk question or edit such as a typo, rename, or short explanation.",
-              normal: "Ordinary implementation, bug fix, or code review with limited risk and scope.",
+              cheap: "Trivial, low-risk question, edit, or straightforward administrative task that follows clear instructions and requires little analysis.",
+              normal: "Ordinary implementation, bug fix, code review, or administrative task that requires analyzing context, making decisions, or coordinating multiple steps.",
               strong: "Complex, risky, cross-cutting, architectural, migration, security, or difficult debugging work.",
             },
           },
@@ -208,10 +210,11 @@ async function classifyWithSystemOne(prompt: string, signal: AbortSignal): Promi
     if (!response.ok) throw new Error(`System One classification failed: ${response.status}`);
     const result = await response.json() as SystemOneResponse;
     const tier = result.answers?.tier?.choice;
-    return tier === "cheap" || tier === "normal" || tier === "strong" ? tier : undefined;
+    if (tier === "cheap" || tier === "normal" || tier === "strong") return tier;
+    throw new Error("System One classification returned no valid tier.");
   } catch (error) {
     if (DEBUG) console.error("[cost-router] local System One classification failed:", error);
-    return undefined;
+    throw new Error(`Cost router requires a valid local System One (${OLLAMA_MODEL}) classification.`, { cause: error });
   }
 }
 
