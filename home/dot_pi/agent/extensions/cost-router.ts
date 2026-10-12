@@ -178,13 +178,13 @@ async function ensureSystemOneModel(signal: AbortSignal): Promise<boolean> {
   } catch (error) {
     systemOneReady = undefined;
     if (DEBUG) console.error("[cost-router] local System One unavailable:", error);
-    throw new Error("Cost router requires local System One (tev1). Start Ollama or set COST_ROUTER_OLLAMA_URL.", { cause: error });
+    throw new Error(`Cost router requires local System One (${OLLAMA_MODEL}). Start Ollama or set COST_ROUTER_OLLAMA_URL.`, { cause: error });
   }
 }
 
 async function classifyWithSystemOne(prompt: string, signal: AbortSignal): Promise<ModelTier> {
   if (!(await ensureSystemOneModel(signal))) {
-    throw new Error("Cost router requires local System One (tev1).");
+    throw new Error(`Cost router requires local System One (${OLLAMA_MODEL}).`);
   }
 
   try {
@@ -214,7 +214,7 @@ async function classifyWithSystemOne(prompt: string, signal: AbortSignal): Promi
     throw new Error("System One classification returned no valid tier.");
   } catch (error) {
     if (DEBUG) console.error("[cost-router] local System One classification failed:", error);
-    throw new Error("Cost router requires a valid local System One (tev1) classification.", { cause: error });
+    throw new Error(`Cost router requires a valid local System One (${OLLAMA_MODEL}) classification.`, { cause: error });
   }
 }
 
