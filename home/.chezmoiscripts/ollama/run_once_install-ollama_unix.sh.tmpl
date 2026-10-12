@@ -1,0 +1,73 @@
+{{- if and (ne .chezmoi.os "windows") (or (eq .env "dev_computer") (eq .env "home_lab")) -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+export PATH="${HOME}/.local/bin:${PATH}"
+
+if ! command -v mise &>/dev/null; then
+    echo "Error: mise is required to install Ollama." >&2
+    exit 1
+fi
+
+echo "==> Installing Ollama with mise..."
+mise use --global aqua:ollama/ollama@latest
+OLLAMA_BIN="$(mise which ollama)"
+echo "  Installed: ${OLLAMA_BIN}"
+
+if [[ "{{ .chezmoi.os }}" == "darwin" ]]; then
+    PLIST_DIR="${HOME}/Library/LaunchAgents"
+    PLIST_PATH="${PLIST_DIR}/dev.ollama.serve.plist"
+    mkdir -p "$PLIST_DIR"
+    cat > "$PLIST_PATH" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>dev.ollama.serve</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>${OLLAMA_BIN}</string>
+    <string>serve</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>${HOME}/Library/Logs/ollama.log</string>
+  <key>StandardErrorPath</key>
+  <string>${HOME}/Library/Logs/ollama.log</string>
+</dict>
+</plist>
+EOF
+    launchctl bootout "gui/$(id -u)" "$PLIST_PATH" 2>/dev/null || true
+    if launchctl bootstrap "gui/$(id -u)" "$PLIST_PATH"; then
+        echo "  Configured launchd service."
+    else
+        echo "Warning: could not start the launchd service; run 'ollama serve' manually." >&2
+    fi
+else
+    SERVICE_DIR="${HOME}/.config/systemd/user"
+    SERVICE_PATH="${SERVICE_DIR}/ollama.service"
+    mkdir -p "$SERVICE_DIR"
+    cat > "$SERVICE_PATH" <<EOF
+[Unit]
+Description=Ollama local model service
+After=network-online.target
+
+[Service]
+ExecStart=${OLLAMA_BIN} serve
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target
+EOF
+    if systemctl --user daemon-reload && systemctl --user enable --now ollama.service; then
+        echo "  Configured systemd user service."
+    else
+        echo "Warning: could not start the systemd user service; run 'ollama serve' manually." >&2
+    fi
+fi
+{{- end -}}

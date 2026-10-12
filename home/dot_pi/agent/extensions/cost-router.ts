@@ -12,6 +12,12 @@ const execFileAsync = promisify(execFile);
 const THINKING_LEVELS = ["low", "medium", "high"] as const;
 const COMPLEXITY_THRESHOLD = 6;
 const DEBUG = process.env.COST_ROUTER_DEBUG === "1";
+const OLLAMA_URL = (process.env.COST_ROUTER_OLLAMA_URL ?? "http://127.0.0.1:11434").replace(/\/$/, "");
+const OLLAMA_MODEL = process.env.COST_ROUTER_OLLAMA_MODEL ?? "tev1";
+const OLLAMA_TIMEOUT_MS = 3_000;
+const OLLAMA_PULL_TIMEOUT_MS = 10 * 60_000;
+
+let systemOneReady: Promise<boolean> | undefined;
 
 const COMPLEX_TASK = /\b(design|migration|migrate|refactor|projektweit|cross[- ]cutting|mehrere dateien|root cause|race condition|concurrency|parallelism|performance|profil(?:e|ing)|komplex|schwierig|debug(?:ging)?|fehleranalyse|teststrategie)\b/i;
 const STRONG_TASK = /\b(architecture|architektur|security|sicherheit|threat model|race condition|concurrency|parallelism|datenmigration|data migration)\b/i;
@@ -62,6 +68,15 @@ interface RouteChoice {
 type ComplexitySignal = {
   rule: string;
   score: number;
+};
+
+type SystemOneResponse = {
+  answers?: {
+    tier?: {
+      choice?: unknown;
+      confidence?: unknown;
+    };
+  };
 };
 
 function scorePromptLength(prompt: string): number {
@@ -123,6 +138,81 @@ export function complexityScore(prompt: string): number {
 function promptOverride(prompt: string): ModelTier | undefined {
   const value = prompt.match(OVERRIDE)?.[1]?.toLowerCase();
   return value === "cheap" || value === "normal" || value === "strong" ? value : undefined;
+}
+
+async function fetchOllama(path: string, init: RequestInit, signal: AbortSignal): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), OLLAMA_TIMEOUT_MS);
+  const abort = () => controller.abort();
+  signal.addEventListener("abort", abort, { once: true });
+  try {
+    return await fetch(`${OLLAMA_URL}${path}`, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+    signal.removeEventListener("abort", abort);
+  }
+}
+
+async function ensureSystemOneModel(signal: AbortSignal): Promise<boolean> {
+  if (!systemOneReady) {
+    systemOneReady = (async () => {
+      const show = await fetchOllama("/api/show", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: OLLAMA_MODEL }),
+      }, signal);
+      if (show.ok) return true;
+      if (show.status !== 404) throw new Error(`Ollama model check failed: ${show.status}`);
+
+      await execFileAsync("ollama", ["pull", OLLAMA_MODEL], {
+        timeout: OLLAMA_PULL_TIMEOUT_MS,
+        maxBuffer: 64 * 1024,
+        signal,
+      });
+      return true;
+    })();
+  }
+
+  try {
+    return await systemOneReady;
+  } catch (error) {
+    systemOneReady = undefined;
+    if (DEBUG) console.error("[cost-router] local System One unavailable:", error);
+    return false;
+  }
+}
+
+async function classifyWithSystemOne(prompt: string, signal: AbortSignal): Promise<ModelTier | undefined> {
+  if (!(await ensureSystemOneModel(signal))) return undefined;
+
+  try {
+    const response = await fetchOllama("/v1/systemone", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: OLLAMA_MODEL,
+        state: { prompt: prompt.slice(0, 8_000) },
+        questions: {
+          tier: {
+            type: "choice",
+            instructions: "Choose the appropriate coding-agent tier for this task.",
+            criteria: {
+              cheap: "Trivial, low-risk question or edit such as a typo, rename, or short explanation.",
+              normal: "Ordinary implementation, bug fix, or code review with limited risk and scope.",
+              strong: "Complex, risky, cross-cutting, architectural, migration, security, or difficult debugging work.",
+            },
+          },
+        },
+      }),
+    }, signal);
+    if (!response.ok) throw new Error(`System One classification failed: ${response.status}`);
+    const result = await response.json() as SystemOneResponse;
+    const tier = result.answers?.tier?.choice;
+    return tier === "cheap" || tier === "normal" || tier === "strong" ? tier : undefined;
+  } catch (error) {
+    if (DEBUG) console.error("[cost-router] local System One classification failed:", error);
+    return undefined;
+  }
 }
 
 /** Determines the tier from prompt-only signals; useful for regression tests. */
@@ -213,11 +303,16 @@ function selectRoute(
   return { modelId, thinkingLevel, tier };
 }
 
-function logRoute(definition: RouterDefinition, choice: RouteChoice, signals: readonly ComplexitySignal[]) {
+function logRoute(definition: RouterDefinition, choice: RouteChoice, signals: readonly ComplexitySignal[], source: string) {
   if (!DEBUG) return;
   const score = signals.reduce((total, signal) => total + signal.score, 0);
   const reasons = signals.map((signal) => `${signal.rule}=${signal.score}`).join(", ") || "none";
-  console.error(`[cost-router] provider=${definition.virtualProvider} tier=${choice.tier} model=${choice.modelId} score=${score} reasons=${reasons}`);
+  console.error(`[cost-router] provider=${definition.virtualProvider} source=${source} tier=${choice.tier} model=${choice.modelId} score=${score} reasons=${reasons}`);
+}
+
+function setRouteStatus(ctx: ExtensionContext, definition: RouterDefinition, choice: RouteChoice, source: string) {
+  const status = `Route: ${source} → ${definition.physicalProvider}/${choice.modelId} (${choice.tier})`;
+  ctx.ui.setStatus("cost-router", ctx.ui.theme.fg("muted", status));
 }
 
 function registerCostRouter(pi: ExtensionAPI, definition: RouterDefinition) {
@@ -243,11 +338,23 @@ function registerCostRouter(pi: ExtensionAPI, definition: RouterDefinition) {
       const signals = complexitySignals(prompt);
       const diffSignal = await worktreeSignal(ctx.cwd);
       if (diffSignal) signals.push(diffSignal);
-      const tier = request.thinkingLevel === "high"
-        ? "strong"
-        : chooseTier(prompt, signals, request.state?.retryEscalation === true);
+
+      const override = promptOverride(prompt);
+      const classifiedTier = !override && request.thinkingLevel !== "high"
+        ? await classifyWithSystemOne(prompt, request.signal)
+        : undefined;
+      const fallbackTier = chooseTier(prompt, signals, request.state?.retryEscalation === true);
+      const tier = override
+        ?? (request.thinkingLevel === "high" ? "strong" : undefined)
+        ?? classifiedTier
+        ?? fallbackTier;
+      const source = override ? "override"
+        : request.thinkingLevel === "high" ? "thinking-level"
+        : classifiedTier ? "system-one"
+        : "heuristic";
       const choice = selectRoute(request, ctx, definition, tier);
-      logRoute(definition, choice, signals);
+      logRoute(definition, choice, signals, source);
+      setRouteStatus(ctx, definition, choice, source);
       return routeTo(ctx, definition.physicalProvider, choice, { retryEscalation: false });
     },
   });
