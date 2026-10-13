@@ -10,6 +10,9 @@ import type {
 } from "@earendil-works/pi-coding-agent";
 
 const THINKING_LEVELS = ["low", "medium", "high"] as const;
+// Classification only needs the task request; keeping it short reduces the
+// extra routing round-trip, especially for pasted logs or long specifications.
+const CLASSIFIER_PROMPT_MAX_CHARS = 2_000;
 const DEBUG = process.env.COST_ROUTER_DEBUG === "1";
 const OVERRIDE = /^\s*!(cheap|normal|strong|auto)\b\s*/i;
 
@@ -226,7 +229,7 @@ async function classifyWithSystemOne(
     signal,
     body: JSON.stringify({
       model: settings.model,
-      state: { prompt: prompt.slice(0, 8_000) },
+      state: { prompt: prompt.slice(0, CLASSIFIER_PROMPT_MAX_CHARS) },
       questions: {
         tier: {
           type: "choice",
@@ -271,7 +274,7 @@ async function classifyWithCheapModel(
       },
       {
         role: "user",
-        content: prompt.slice(0, 8_000),
+        content: prompt.slice(0, CLASSIFIER_PROMPT_MAX_CHARS),
         timestamp: Date.now(),
       },
     ],
