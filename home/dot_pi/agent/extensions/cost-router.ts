@@ -10,6 +10,9 @@ import type {
 } from "@earendil-works/pi-coding-agent";
 
 const THINKING_LEVELS = ["low", "medium", "high"] as const;
+// Classification only needs the task request; keeping it short reduces the
+// extra routing round-trip, especially for pasted logs or long specifications.
+const CLASSIFIER_PROMPT_MAX_CHARS = 2_000;
 const DEBUG = process.env.COST_ROUTER_DEBUG === "1";
 const OVERRIDE = /^\s*!(cheap|normal|strong|auto)\b\s*/i;
 
@@ -226,7 +229,7 @@ async function classifyWithSystemOne(
     signal,
     body: JSON.stringify({
       model: settings.model,
-      state: { prompt: prompt.slice(0, 8_000) },
+      state: { prompt: prompt.slice(0, CLASSIFIER_PROMPT_MAX_CHARS) },
       questions: {
         tier: {
           type: "choice",
@@ -271,21 +274,33 @@ async function classifyWithCheapModel(
       },
       {
         role: "user",
-        content: prompt.slice(0, 8_000),
+        content: prompt.slice(0, CLASSIFIER_PROMPT_MAX_CHARS),
         timestamp: Date.now(),
       },
     ],
   }, {
     signal,
-    maxTokens: 128,
-    reasoning: "low",
+    // The response is a tiny JSON object. Do not spend the output budget on
+    // reasoning, and leave room for providers that include hidden tokens.
+    maxTokens: 256,
   }).result();
 
-  if (response.stopReason !== "stop") {
-    throw new Error(`Tier classifier did not complete: ${response.stopReason}${response.errorMessage ? ` (${response.errorMessage})` : ""}.`);
+  const content = textContent(response.content).trim();
+  if (response.stopReason === "stop") return parseTierClassification(content);
+
+  if (response.stopReason === "length") {
+    // Some providers report `length` even after emitting the complete visible
+    // JSON response. Accept a valid result; otherwise use the conservative
+    // tier rather than failing the user's actual request.
+    try {
+      return parseTierClassification(content);
+    } catch {
+      if (DEBUG) console.error("[cost-router] classifier hit its output limit; using normal tier");
+      return "normal";
+    }
   }
 
-  return parseTierClassification(textContent(response.content).trim());
+  throw new Error(`Tier classifier did not complete: ${response.stopReason}${response.errorMessage ? ` (${response.errorMessage})` : ""}.`);
 }
 
 function availableModelIds(ctx: ExtensionContext, definition: RouterDefinition): Set<string> {
