@@ -1,0 +1,29 @@
+{
+  "classifier": {
+    "type": "{{ if eq .chezmoi.os "darwin" }}system-one{{ else }}cheap-model{{ end }}",
+    "systemOne": {
+      "url": "http://127.0.0.1:11434",
+      "model": "tev1"
+    },
+    "models": {
+      "github-copilot": "gpt-6-luna",
+      "openai-codex": "gpt-6-luna"
+    }
+  },
+  "providers": {
+    "github-copilot": {
+      "contextWindow": 1100000,
+      "allowedModels": ["gpt-6-luna", "gpt-5.6-luna", "gpt-5.6-terra", "gpt-6-sol", "gpt-6.1-sol", "claude-sonnet-5", "claude-sonnet-5.5", "gemini-3.8-flash"],
+      "cheap": "gpt-6-luna",
+      "normal": "gpt-5.6-terra",
+      "strong": "gpt-6.1-sol"
+    },
+    "openai-codex": {
+      "contextWindow": 272000,
+      "allowedModels": ["gpt-6-luna", "gpt-5.6-luna", "gpt-5.6-terra", "gpt-6-astra", "gpt-6-sol", "gpt-6.1-sol", "gpt-5.5"],
+      "cheap": "gpt-6-luna",
+      "normal": "gpt-5.6-terra",
+      "strong": "gpt-6.1-sol"
+    }
+  }
+}
