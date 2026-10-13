@@ -3,7 +3,8 @@
     "type": "{{ if eq .chezmoi.os "darwin" }}system-one{{ else }}cheap-model{{ end }}",
     "systemOne": {
       "url": "http://127.0.0.1:11434",
-      "model": "tev1"
+      "model": "tev1",
+      "keepAlive": "30m"
     },
     "models": {
       "github-copilot": "gemini-3.8-flash",
