@@ -277,15 +277,27 @@ async function classifyWithCheapModel(
     ],
   }, {
     signal,
-    maxTokens: 128,
-    reasoning: "low",
+    // The response is a tiny JSON object. Do not spend the output budget on
+    // reasoning, and leave room for providers that include hidden tokens.
+    maxTokens: 256,
   }).result();
 
-  if (response.stopReason !== "stop") {
-    throw new Error(`Tier classifier did not complete: ${response.stopReason}${response.errorMessage ? ` (${response.errorMessage})` : ""}.`);
+  const content = textContent(response.content).trim();
+  if (response.stopReason === "stop") return parseTierClassification(content);
+
+  if (response.stopReason === "length") {
+    // Some providers report `length` even after emitting the complete visible
+    // JSON response. Accept a valid result; otherwise use the conservative
+    // tier rather than failing the user's actual request.
+    try {
+      return parseTierClassification(content);
+    } catch {
+      if (DEBUG) console.error("[cost-router] classifier hit its output limit; using normal tier");
+      return "normal";
+    }
   }
 
-  return parseTierClassification(textContent(response.content).trim());
+  throw new Error(`Tier classifier did not complete: ${response.stopReason}${response.errorMessage ? ` (${response.errorMessage})` : ""}.`);
 }
 
 function availableModelIds(ctx: ExtensionContext, definition: RouterDefinition): Set<string> {
