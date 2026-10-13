@@ -26,6 +26,32 @@ test("rejects a response without a valid tier", () => {
   );
 });
 
+test("rejects an invalid System One keep-alive value", () => {
+  const directory = mkdtempSync(join(tmpdir(), "cost-router-"));
+  const path = join(directory, "cost-router-settings.json");
+  try {
+    writeFileSync(path, JSON.stringify({
+      classifier: {
+        type: "system-one",
+        models: { "github-copilot": "gpt-6-luna" },
+        systemOne: { url: "http://127.0.0.1:11434", model: "tev1", keepAlive: -1 },
+      },
+      providers: {
+        "github-copilot": {
+          contextWindow: 1,
+          allowedModels: ["gpt-6-luna"],
+          cheap: "gpt-6-luna",
+          normal: "gpt-6-luna",
+          strong: "gpt-6-luna",
+        },
+      },
+    }));
+    assert.throws(() => loadCostRouterSettings(path), /classifier\.systemOne\.keepAlive/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("fails clearly when the settings file is missing", () => {
   assert.throws(
     () => loadCostRouterSettings("/tmp/cost-router-settings-does-not-exist.json"),
@@ -41,7 +67,7 @@ test("loads cheap-model and System One settings", () => {
       classifier: {
         type: "system-one",
         models: { "github-copilot": "gpt-6-luna" },
-        systemOne: { url: "http://127.0.0.1:11434/", model: "tev1" },
+        systemOne: { url: "http://127.0.0.1:11434/", model: "tev1", keepAlive: "30m" },
       },
       providers: {
         "github-copilot": {
@@ -55,7 +81,7 @@ test("loads cheap-model and System One settings", () => {
     }));
     const settings = loadCostRouterSettings(path);
     assert.equal(settings.classifier.type, "system-one");
-    assert.deepEqual(settings.classifier.systemOne, { url: "http://127.0.0.1:11434", model: "tev1" });
+    assert.deepEqual(settings.classifier.systemOne, { url: "http://127.0.0.1:11434", model: "tev1", keepAlive: "30m" });
     assert.equal(settings.providers["github-copilot"].contextWindow, 1_100_000);
   } finally {
     rmSync(directory, { recursive: true, force: true });

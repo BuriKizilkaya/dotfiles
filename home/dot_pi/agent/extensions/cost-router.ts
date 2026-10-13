@@ -27,6 +27,8 @@ interface ProviderSettings extends TierModels {
 interface SystemOneSettings {
   url: string;
   model: string;
+  /** Ollama duration (for example "30m") used to retain the classifier in memory. */
+  keepAlive?: string | number;
 }
 
 export interface CostRouterSettings {
@@ -73,6 +75,13 @@ function configuredModel(value: unknown, path: string): string {
   return value.trim();
 }
 
+function configuredKeepAlive(value: unknown): string | number | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value === "string" && value.trim() !== "") return value.trim();
+  if (typeof value === "number" && Number.isFinite(value) && value >= 0) return value;
+  throw new Error("Invalid cost-router setting classifier.systemOne.keepAlive: expected a non-empty duration string or non-negative number.");
+}
+
 /** Loads and validates the required user configuration. */
 export function loadCostRouterSettings(path = SETTINGS_PATH): CostRouterSettings {
   if (!existsSync(path)) {
@@ -116,9 +125,11 @@ export function loadCostRouterSettings(path = SETTINGS_PATH): CostRouterSettings
       throw new Error(`Invalid cost-router setting classifier.systemOne: expected an object.`);
     }
     const values = rawSystemOne as Record<string, unknown>;
+    const keepAlive = configuredKeepAlive(values.keepAlive);
     systemOne = {
       url: configuredModel(values.url, "classifier.systemOne.url").replace(/\/$/, ""),
       model: configuredModel(values.model, "classifier.systemOne.model"),
+      ...(keepAlive === undefined ? {} : { keepAlive }),
     };
   }
 
@@ -229,6 +240,7 @@ async function classifyWithSystemOne(
     signal,
     body: JSON.stringify({
       model: settings.model,
+      ...(settings.keepAlive === undefined ? {} : { keep_alive: settings.keepAlive }),
       state: { prompt: prompt.slice(0, CLASSIFIER_PROMPT_MAX_CHARS) },
       questions: {
         tier: {
