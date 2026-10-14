@@ -12,12 +12,8 @@ pi = "latest"
 herdr = "latest"
 zoxide = "latest"
 
-[tools.opencode]
-version = "latest"
-
 [tools.rtk]
 version = "latest"
 postinstall = '''
-rtk init -g --opencode
 rtk init -g --agent pi
 '''

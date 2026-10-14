@@ -9,15 +9,6 @@
     "cwd": "$ZED_WORKTREE_ROOT",
   },
   {
-    "label": "opencode",
-    "command": "opencode",
-    "use_new_terminal": false,
-    "allow_concurrent_runs": false,
-    "hide": "never",
-    "reveal": "always",
-    "cwd": "$ZED_WORKTREE_ROOT",
-  },
-  {
     "label": "lazygit",
     "command": "lazygit",
     "use_new_terminal": false,
